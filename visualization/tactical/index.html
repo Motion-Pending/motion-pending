@@ -339,17 +339,23 @@ if (window.K8_BOOT.lite || window.K8_STORY) {
 { "imports": { "three": "../vendor/three/build/three.module.js",
                "three/addons/": "../vendor/three/examples/jsm/" } }
 </script>
-<script src="../adapter.js"></script>
-<script src="assets/head.js?r=p2"></script>
-<!-- the neck rig as a classic script, as in ../proposal: the Data side (dataview.js) builds its head poser from window.K8HeadPose when it loads, which can be before the viewer module has run -->
-<script src="headpose.js?r=t2"></script>
-<script src="traces/index.js?r=q2"></script>
-<script src="plain.js?r=f1"></script>
-<script src="beginner.js?r=f1"></script>
-<script src="expert.js?r=f1"></script>
-<script src="insets.js?r=t1"></script>
-<script src="tour.js?r=t1"></script>
-<script src="guide.js?r=f1"></script>
+<!-- The viewer's classic scripts (about 330 KB). The story uses none of them, so they are written in only when the page opens as the
+     viewer (21 Nov 2026). document.write keeps them parser-blocking and in this order, exactly as plain tags were, and the story never
+     fetches them. headpose.js is the neck rig as a classic script, as in ../proposal: the Data side (dataview.js) builds its head poser
+     from window.K8HeadPose when it loads, which can be before the viewer module has run. -->
+<script>
+if (!window.K8_STORY) document.write(
+  '<script src="../adapter.js"><\/script>' +
+  '<script src="assets/head.js?r=p2"><\/script>' +
+  '<script src="headpose.js?r=t2"><\/script>' +
+  '<script src="traces/index.js?r=q2"><\/script>' +
+  '<script src="plain.js?r=f1"><\/script>' +
+  '<script src="beginner.js?r=f1"><\/script>' +
+  '<script src="expert.js?r=f1"><\/script>' +
+  '<script src="insets.js?r=t1"><\/script>' +
+  '<script src="tour.js?r=t1"><\/script>' +
+  '<script src="guide.js?r=f1"><\/script>');
+</script>
 </head>
 <body>
 <!-- ================================================================ the story (styled by story.css, driven by story.js; shown when html.story is set by the boot script)
