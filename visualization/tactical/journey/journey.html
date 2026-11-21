@@ -35,13 +35,14 @@
 
   /* hotspot dots: DOM buttons placed over projected 3D anchors */
   #dots { position: fixed; inset: 0; pointer-events: none; }
-  .dot { position: absolute; left: 0; top: 0; width: 34px; height: 34px; margin: -17px 0 0 -17px; padding: 0; border: 0;
+  /* 44 px touch target (21 Nov 2026); the drawn ring keeps its old 22 px (34 px on hover) */
+  .dot { position: absolute; left: 0; top: 0; width: 44px; height: 44px; margin: -22px 0 0 -22px; padding: 0; border: 0;
     background: none; cursor: pointer; pointer-events: auto; transition: opacity .25s; }
-  .dot::before { content: ''; position: absolute; inset: 6px; border: 1px solid var(--bone); border-radius: 50%; transition: inset .25s, border-color .25s; }
+  .dot::before { content: ''; position: absolute; inset: 11px; border: 1px solid var(--bone); border-radius: 50%; transition: inset .25s, border-color .25s; }
   .dot::after { content: ''; position: absolute; left: 50%; top: 50%; width: 6px; height: 6px; margin: -3px; border-radius: 50%; background: var(--bone); }
-  .dot:hover::before, .dot:focus-visible::before { inset: 0; border-color: var(--acid); }
+  .dot:hover::before, .dot:focus-visible::before { inset: 5px; border-color: var(--acid); }
   .dot:hover::after, .dot:focus-visible::after { background: var(--acid); }
-  .dot span { position: absolute; left: 30px; top: 50%; transform: translateY(-50%); white-space: pre; text-align: left;
+  .dot span { position: absolute; left: 35px; top: 50%; transform: translateY(-50%); white-space: pre; text-align: left;
     font: 500 12px/1.25 GeistMono, monospace; letter-spacing: .06em; color: var(--acid); opacity: 0; transition: opacity .2s; }
   .dot:hover span, .dot:focus-visible span { opacity: 1; }
   .dot.hidden { opacity: 0; pointer-events: none; }
@@ -103,7 +104,7 @@
   #pnav.off { opacity: 0; pointer-events: none; }
   .circ { all: unset; width: 44px; height: 44px; border: 1px solid var(--bone); border-radius: 50%; display: grid; place-items: center; font-size: 17px; cursor: pointer; }
   .circ:hover { background: var(--bone); color: var(--bg); } .circ:focus-visible { outline: 1px solid var(--acid); outline-offset: 3px; }
-  .dot.hl::before { inset: 0; border-color: var(--acid); } .dot.hl::after { background: var(--acid); } .dot.hl span { opacity: 1; }
+  .dot.hl::before { inset: 5px; border-color: var(--acid); } .dot.hl::after { background: var(--acid); } .dot.hl span { opacity: 1; }
   /* TAKE CONTROL: the opening state. The type sits BEHIND the 3D canvas (z-index −1, and the canvas is transparent in this state),
      so the headset overlaps it. body.hero shows the hero and hides the interactive chrome. */
   #heroType { position: fixed; left: 0; right: 0; top: 24vh; margin: 0; z-index: -1; text-align: center; pointer-events: none;
@@ -121,10 +122,77 @@
   #launch { all: unset; position: absolute; right: 56px; bottom: 15vh; background: var(--bone); color: var(--bg); padding: 20px 38px; font: 400 17px Geist, sans-serif; cursor: pointer; transition: background .2s, color .2s; }
   #launch:hover { background: var(--acid); } #launch:focus-visible { outline: 2px solid var(--acid); outline-offset: 4px; }
   @media (prefers-reduced-motion: reduce) { #hero .blink { animation: none; } }
-  body.hero #hud, body.hero #tune, body.hero #pnav, body.hero #panel, body.hero #back, body.hero #dots { opacity: 0 !important; visibility: hidden; }
+  body.hero #hud, body.hero #tune, body.hero #pnav, body.hero #panel, body.hero #back, body.hero #close, body.hero #pmore, body.hero #dots { opacity: 0 !important; visibility: hidden; }
   #hud, #tune, #dots { transition: opacity .6s ease .5s; }
   #tune { position: fixed; left: 32px; bottom: 24px; font: 11px/1.6 GeistMono, monospace; color: var(--grey); }
   #tune label { margin-right: 14px; }
+
+  /* ---------------------------------------------------------------- phone portrait (21 Nov 2026)
+     journey.js layout() sets html.phone (portrait, at most 768 px wide). The side panel becomes a frosted text block over the top --ph
+     of the screen showing one part at a time; the 3D sits in the model rect below it, above a --pb strip (board switch, die caption).
+     journey.js reads --ph and --pb, so the camera framing and this CSS agree. */
+  :root { --ph: 236px; --pb: 64px; --pmore: 78vh; }
+  #fadeMsg { position: absolute; left: 0; right: 0; top: 50%; text-align: center; font-size: 11px; color: var(--grey); opacity: 0; transition: opacity .3s; }
+  #fade.loading #fadeMsg { opacity: 1; }
+  #prule, #phint, #pmore, #close { display: none; }
+  .prow .n i { display: none; font-style: normal; }
+  #close { position: fixed; top: 12px; right: 12px; z-index: 5; width: 44px; height: 44px; border-radius: 50%; border: 1px solid var(--bone);
+    background: rgba(1,1,1,.35); color: var(--bone); font: 16px Geist; cursor: pointer; place-items: center; }
+  html.phone #close.on { display: grid; }
+  html.phone #back { top: 12px; right: 66px; background: rgba(1,1,1,.35); }
+  html.phone #panel { left: 0; right: 0; bottom: auto; width: auto; height: var(--ph); padding: 12px 16px 64px; display: flex; flex-direction: column; overflow: hidden;
+    background: rgba(1,1,1,.35); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+  html.phone #panel.off { transform: translateY(-24px); }
+  html.phone #panel.is-ending { padding-bottom: 12px; }
+  html.phone body.more #panel { height: var(--pmore); overflow-y: auto; }
+  html.phone #ptitle { order: -1; flex: none; min-height: 44px; display: flex; align-items: center; margin: 0 112px 0 0; font-size: 24px; line-height: 1.05; }
+  html.phone #psub { flex: none; font-size: 10px; margin: 2px 0 10px; }
+  html.phone #prule { display: block; flex: none; position: relative; height: 1px; background: var(--line); margin-bottom: 10px; }
+  html.phone #prule::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--p, 0) * 100%); background: var(--acid); transition: width .4s; }
+  html.phone #panel.is-ending #prule { display: none; }
+  html.phone #panel:not(.has-open):not(.is-ending) #phint { display: block; margin: 0; font-size: 11px; line-height: 1.5; color: var(--grey); }
+  html.phone .prow, html.phone .prow:last-child { display: none; border: 0; }
+  html.phone .prow.open { display: block; }
+  html.phone .prow > button { display: flex; gap: 14px; min-height: 0; padding-bottom: 6px; font: 500 12px/1.3 GeistMono, monospace; letter-spacing: .08em; text-transform: uppercase; color: var(--bone); }
+  html.phone .prow .n { font: inherit; color: var(--acid); } html.phone .prow .n i { display: inline; color: #6c6e6b; }
+  html.phone .prow .pm, html.phone .prow .divebtn, html.phone .prow .facts { display: none; }
+  html.phone .prow .body { padding: 0; }
+  html.phone .prow .body p, html.phone .ending p { font-size: 15px; line-height: 1.32; margin: 0; cursor: pointer;
+    display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+  html.phone body.more .prow .body p, html.phone body.more .ending p { display: block; }
+  html.phone body.more .prow .facts { display: block; margin-top: 10px; }
+  html.phone .ending p { margin-bottom: 8px; } html.phone .ending p.dim { display: none; } html.phone body.more .ending p.dim { display: block; }
+  html.phone .ending .facts { display: flex; flex-wrap: wrap; gap: 0 14px; font: 10.5px/1.6 GeistMono, monospace; letter-spacing: .04em; color: var(--grey); margin-bottom: 8px; }
+  html.phone .ending .divebtn { margin-top: 2px; padding: 10px 14px; }
+  html.phone body:not(.more) #panel.has-open #pcredit, html.phone body:not(.more) #panel.is-ending #pcredit { display: none; }   /* credit: overview and MORE */
+  html.phone .pcredit { margin-top: 10px; font-size: 9.5px; }
+  html.phone #pnav { top: calc(var(--ph) - 56px); right: 12px; bottom: auto; gap: 10px; }
+  html.phone #pmore { position: fixed; left: 16px; top: calc(var(--ph) - 56px); z-index: 5; height: 44px; padding: 0 12px 0 0; background: none; border: 0;
+    font-size: 12px; color: var(--bone); cursor: pointer; }
+  html.phone #panel.has-open:not(.off):not(.is-ending) ~ #pmore { display: block; }
+  html.phone body.more #pnav, html.phone body.more #pmore { top: calc(var(--pmore) - 56px); }
+  html.phone #pnav.dive .circ[data-d="1"] { display: flex; align-items: center; white-space: nowrap; width: auto; padding: 0 18px; border-radius: 22px; background: var(--acid); border-color: var(--acid); color: var(--bg);
+    font: 500 12px GeistMono, monospace; letter-spacing: .1em; }
+  html.phone #pnav.dive .circ[data-d="1"]::before { content: 'DIVE IN\00a0\00a0'; }
+  html.phone .dot.on::before { inset: 5px; border-color: var(--acid); } html.phone .dot.on::after { background: var(--acid); } html.phone .dot.on span { opacity: 1; }
+  /* phone: the label sits under its dot, slid sideways (--lx, journey.js placeDots) so it stays on screen */
+  html.phone .dot span { top: 46px; left: calc(22px + var(--lx, 0px)); transform: none; text-align: left; }
+  /* the HUD: the level is in the panel, so only the board's side switch and the model-view switch stay, as a bottom row */
+  html.phone #hud { top: auto; left: 12px; right: 12px; bottom: calc(10px + env(safe-area-inset-bottom)); font-size: 0; }
+  html.phone #hud #lvl { display: none; }
+  html.phone #mswitch, html.phone #bswitch { margin-left: 0; }
+  html.phone #hud button { margin: 0 8px 0 0; min-height: 44px; padding: 0 12px; }
+  html.phone #hud button[aria-pressed="false"] { background: rgba(1,1,1,.6); color: var(--bone); }
+  /* the die's 10 ms cycle: a frosted bottom strip showing the step that is lit now */
+  html.phone #flow { left: 0; right: 0; bottom: 0; max-width: none; padding: 10px 16px calc(10px + env(safe-area-inset-bottom)); font-size: 10px;
+    background: rgba(1,1,1,.35); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+  html.phone #flow p { margin: 0 0 4px; } html.phone #flow ol { min-height: 30px; } html.phone #flow li:not(.now) { display: none; }
+  html.phone #finale { left: auto; right: 12px; padding: 13px 16px; bottom: calc(12px + env(safe-area-inset-bottom)); transform: translateY(20px); }
+  html.phone #finale.on { transform: none; }
+  /* standalone TAKE CONTROL: the intro copy above the Launch button, not beside it */
+  html.phone #hero .hl { top: 9vh; } html.phone #hero .tl { left: 20px; } html.phone #hero .tr { right: 20px; }
+  html.phone #hero .hcopy { left: 20px; right: 20px; bottom: calc(10vh + 84px); font-size: 20px; }
+  html.phone #launch { left: 20px; right: 20px; bottom: 10vh; padding: 18px 0; text-align: center; }
 </style>
 <script type="importmap">
 { "imports": { "three": "../../vendor/three/build/three.module.js",
@@ -140,7 +208,7 @@
 <canvas id="gl"></canvas>
 <canvas id="freeze"></canvas>
 <div id="flash"></div>
-<div id="fade" aria-hidden="true"></div>
+<div id="fade"><span id="fadeMsg" class="mono" role="status">Loading…</span></div>
 <div id="dots"></div>
 <div id="flow" aria-live="off">
   <p>One 10 ms cycle · shown 400× slower</p>
@@ -157,9 +225,12 @@
 <aside id="panel" aria-label="Parts of this level">
   <div id="psub" class="mono"></div>
   <h1 id="ptitle"></h1>
+  <div id="prule"></div>
+  <p id="phint" class="mono">Tap a point, or use → to step through</p>
   <div id="rows"></div>
 </aside>
 <div id="pnav"><button type="button" class="circ" data-d="-1" aria-label="Previous part">←</button><button type="button" class="circ" data-d="1" aria-label="Next part">→</button></div>
+<button id="pmore" type="button" class="mono" aria-expanded="false">MORE +</button>
 <section id="hero" aria-label="Take control">
   <div class="hl tl mono"><span class="blink"></span>MODEL ONLINE<br>LIVE · TEST PLAYER</div>
   <div class="hl tr mono">3D<br>INTERACTIVE</div>
@@ -168,6 +239,7 @@
 </section>
 <button id="finale" type="button">SEE IT PREDICT  →</button>
 <button id="back" type="button" aria-label="Back out one level">←</button>
+<button id="close" type="button" aria-label="Close the interactive view">✕</button>
 <div id="tune">
   <label>head speed <input id="tSpeed" type="range" min="5" max="100" value="25"></label>
   <label>dive ms <input id="tDive" type="range" min="600" max="3000" value="1500"></label>
