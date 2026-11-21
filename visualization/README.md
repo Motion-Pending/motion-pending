@@ -35,15 +35,24 @@ Then open <http://127.0.0.1:8791/tactical/index.html>. (`serve.py` turns caching
 | `tactical/models/` | `board_build.py` (rebuilds the board glb in Blender, headless), `headset_export.py`, `CREDITS.md` |
 | `tactical/PLAN.md` | design notes and decisions, in order |
 
-Not copied here (they stay in Nic's working repo): the Blender files for the headset (`headset.blend`, its textures, the
-Sketchfab review file) and test renders, about 40 MB. `headset_export.py` needs them; `board_build.py` does not.
+Not included: the Blender source files (`headset.blend`, `board.blend`, `quest_ref.blend`, the headset textures) and test
+renders. `headset_export.py` needs them; `board_build.py` rebuilds the board without them. They were built from:
+- `headset.blend`: "Meta Quest 3" by Elin, <https://sketchfab.com/3d-models/meta-quest-3-65a813833dc04eeeb7d33bdca58c184c>,
+  CC BY 4.0. Changed: Meta logo blanked in the base-colour and normal maps, scaled and placed on the head.
+- `quest_ref.blend` (review only, nothing from it is used): the same model and "Man with Meta Quest 3 headset" by onirix,
+  <https://sketchfab.com/3d-models/man-with-meta-quest-3-headset-eabf1099363a48ce9a4192539aa499b0>, CC BY 4.0.
+- `board.blend`: made by `board_build.py`, with part positions and sizes measured off the photos in iFixit's
+  "Meta Quest 3 Chip ID" (<https://www.ifixit.com/Guide/Meta+Quest+3+Chip+ID/165932>). No iFixit image is in the model.
+- The head (`tactical/assets/head.js`, `tactical/hero/head.js`): `GEO-head_animation_realistic` from Blender Studio's
+  Human Base Meshes bundle v1.4.1 (<https://download.blender.org/demo/asset-bundles/human-base-meshes/>), CC0.
 
 ## Credits and licences
 
 Headset: "Meta Quest 3" by Elin (sketchfab.com/ElinHohler), CC BY 4.0, modified (logo removed, fitted). Not affiliated with Meta.
 Circuit board: modelled from the photos and part list in iFixit's "Meta Quest 3 Chip ID"; chip markings are the parts' own
-(Qualcomm, Snapdragon, SK hynix, Qorvo and STMicroelectronics are trademarks of their owners). three.js (MIT), Google's Draco
-decoder (Apache 2.0), Geist fonts (SIL OFL 1.1). Full list: `tactical/models/CREDITS.md` and the page's Credits section.
+(Qualcomm, Snapdragon, SK hynix, Qorvo and STMicroelectronics are trademarks of their owners). Head mesh: Blender Studio's
+Human Base Meshes v1.4.1 (CC0). three.js (MIT), Google's Draco decoder (Apache 2.0, licence in
+`tactical/vendor_gltf/draco/LICENSE`), Geist fonts (SIL OFL 1.1). Full list: `tactical/models/CREDITS.md` and the page's Credits section.
 
 Replay data: "Questset" by Sara Baldoni, Federica Battisti, Federico Chiariotti, Fabio Mistrorigo, Alfi Baqiatus Shofi, Paolo
 Testolina, Alessandro Traspadini, Andrea Zanella and Michele Zorzi (2024), Research Data Unipd,
