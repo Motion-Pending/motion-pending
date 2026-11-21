@@ -13,7 +13,7 @@
   'use strict';
   // 13 Nov 2026: the data is the story's own copy (data/pipeline/, final dataset moredata_final.h5, made by tools/make_data_final.py),
   // not the parent's ../data/pipeline (the 1,600-player version, which other pages still read).
-  const FILES = { css: 'dataview.css?r=fn1', data: 'data/pipeline/examples.js?r=s1', js: 'dataview.js?r=s1' };
+  const FILES = { css: 'dataview.css?r=fn1', data: 'data/pipeline/examples.js?r=s1', js: 'dataview.js?r=src1' };
   const brand = document.getElementById('brand');
   if (!brand) return;
 

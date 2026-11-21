@@ -1358,7 +1358,7 @@ window.K8DataView = (() => {
   const sub = label => `<tr class="sub"><td colspan="2">${label}</td></tr>`;
   const minus = n => (n ? '−' : '') + fmt(n);
   const srcPull = `counts: pull log results.sqlite on the PC, ${esc(P.snapshot)} (${fmt(P.users)} archives)`;
-  const localNote = `pictures: synthetic recordings (tools/make_synthetic_data.py), made to the counts of ${fmt(L.recordings)} raw recordings of ${L.users} players in a local folder, because BOXRR-23's licence does not allow showing its recordings`;
+  const localNote = `pictures: synthetic recordings (tools/make_synthetic_data.py), made to the counts of ${fmt(L.recordings)} raw recordings of ${L.users} players in a local folder, because BOXRR-23's data use agreement does not allow passing its recordings on`;
   const WRONG = 'What is wrong', DO = 'What we do', LEFT_ = 'What is left';
   const rateWords = RATES.slice(0, -1).join(', ') + ' or ' + RATES[RATES.length - 1];
   // F5: the headline names the four tallest bars of the pull's histogram (the figure beside it), not the laptop's rates.
@@ -1393,7 +1393,7 @@ window.K8DataView = (() => {
       src: `ray/code/hf.py, pipeline.process_tar · ${srcPull} · ${localNote}`,
       tabs: [
         { name: 'One recording', fig: figOne, head: 1, stored: true, cap: `A made-up recording in the style of Beat Saber (${who(E.one)}), ${fx(E.one.seconds, 0)} s from the middle of it. Three lines, one for each way a head can turn. Move over the chart and the head follows. ${quatNote}` },
-        { name: 'The pile', fig: figWall, cap: `Each tile is one synthetic recording, like the one on the first picture, standing in for one real recording on the team's laptop (BOXRR-23's licence does not allow showing them). Each was run through the real pipeline, and the pile has the real folder's counts. Its strokes show how far the head swung left and right from its start to its end, and a longer recording fills more of its tile. ` +
+        { name: 'The pile', fig: figWall, cap: `Each tile is one synthetic recording, like the one on the first picture, standing in for one real recording on the team's laptop (BOXRR-23's data use agreement does not allow passing them on). Each was run through the real pipeline, and the pile has the real folder's counts. Its strokes show how far the head swung left and right from its start to its end, and a longer recording fills more of its tile. ` +
           `The colour is what will happen to it; the few solid green ones are kept. ` +
           // F4 (spec review): the per-reason counts the old legend gave, as one sentence, straight from WALL.fate_counts
           `Of the ${fmt(WALL.tiles.length)}: the head hardly moves in ${fmt(WALL.fate_counts[3])}, the sampling rate is wrong in ${fmt(WALL.fate_counts[2])}, ${fmt(WALL.fate_counts[1])} are too short, ` +
@@ -1693,6 +1693,36 @@ window.K8DataView = (() => {
   // ?dv=classic keeps the previous layout.
   const FUNNEL = new URLSearchParams(location.search).get('dv') !== 'classic';
   const HEAD_STAGES = new Set(['raw', 'motion', 'window']);
+  // 21 Nov 2026 (Nic: every place the site talks about data says where it comes from): each picture gets a source tag.
+  // 'syn' = a synthetic recording drawn by tools/make_synthetic_data.py; 'real' = counts or measurements of BOXRR-23 itself
+  // (no recording shown); 'qs' = a QuestSet recording (CC BY 4.0). Matched by tab name; a tab missing here gets no tag.
+  const SOURCE_OF = {
+    syn: ['One recording', 'The pile', 'Inside a file', 'One kept, one skipped', 'Bad start', 'Clock stuck', 'Clock jumps back',
+      'Sign flip', 'Too short', 'Too slow, too fast', 'Why the median', 'Still or moving', 'Uneven to even', 'Small hole: bridged',
+      'Big hole: cut', 'Just too short', 'One player'],
+    real: ['Recordings per player', 'All recordings', 'All players', 'Every player', 'Rate before resampling', 'Still messy labels'],
+    qs: E.window.h5_path ? [] : ['A real window'],
+  };
+  const SOURCE_TAG = { syn: 'SYNTHETIC EXAMPLE · NOT A REAL PLAYER', real: 'REAL BOXRR-23 COUNTS · CC BY-NC-SA 4.0', qs: 'REAL RECORDING · QUESTSET · CC BY 4.0' };
+  const sourceOf = name => Object.keys(SOURCE_OF).find(k => SOURCE_OF[k].includes(name));
+  // The tag sits at the picture's top right, on the title's line. If any text of the picture is in the way there, it goes
+  // under the drawing instead (bottom left), below everything else.
+  function addSourceTag(el, name, W, H) {
+    const k = sourceOf(name); if (!el || !k) return;
+    const content = el.getBBox(), others = [...el.querySelectorAll('text')].map(x => x.getBBox());
+    const t = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+    t.setAttribute('x', W - 14); t.setAttribute('y', 15); t.setAttribute('text-anchor', 'end');
+    t.setAttribute('style', `${figText('title', k === 'syn' ? COL.accent : COL.muted)};font-family:GeistMono,monospace;letter-spacing:.06em;font-size:${(10.5 / scale).toFixed(2)}px`);
+    t.textContent = SOURCE_TAG[k];
+    el.appendChild(t);
+    const a = t.getBBox(), pad = 8;
+    const hit = others.some(b => a.x - pad < b.x + b.width && b.x < a.x + a.width + pad && a.y < b.y + b.height && b.y < a.y + a.height);
+    if (hit) {
+      const y = content.y + content.height + 16;
+      t.setAttribute('x', 14); t.setAttribute('text-anchor', 'start'); t.setAttribute('y', y);
+      if (y + 4 > H) el.setAttribute('viewBox', `0 0 ${W} ${Math.ceil(y + 4)}`);   // a full picture grows a line to make room
+    }
+  }
   const FLOW_SCALE = 'Line thickness: the square root of the recordings still in, on a 2 px floor. Stage 6 does not log how many it drops.';
   function drawFlow() {
     const nav = $('dvNav'), brand = document.getElementById('brand');
@@ -1874,6 +1904,7 @@ window.K8DataView = (() => {
     const W = Math.round(wpx / scale), H = Math.round(hpx / scale);
     const res = t.fig(W, H, { stored: asStored && !!t.stored }), out = typeof res === 'string' ? { svg: res } : res;
     box.innerHTML = svg(W, H, `${s.title}: ${t.name}`, out.svg);
+    addSourceTag(box.querySelector('svg'), t.name, W, H);
     // F5: a figure without a head that leaves its bottom empty gives that space up, so the caption follows the figure
     // instead of sitting at the bottom of the page. The picture keeps its scale: only the viewBox and the row get shorter.
     if (!heads) {
