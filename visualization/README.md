@@ -5,7 +5,10 @@ The team's interactive site for the final model (final_k8_combined_v10_s42, trai
 
 ## Run it
 
-It must be served over http (the pages load modules and data files), from this folder:
+**Live:** <https://nicgroenewald.github.io/abc-challenge/>, published from this folder by `.github/workflows/pages.yml` on
+every push to `main` that changes it.
+
+To run it locally, it must be served over http (the pages load modules and data files), from this folder:
 
 ```bash
 python3 tactical/proto/serve.py
