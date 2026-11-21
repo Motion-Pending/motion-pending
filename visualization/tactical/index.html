@@ -339,17 +339,23 @@ if (window.K8_BOOT.lite || window.K8_STORY) {
 { "imports": { "three": "../vendor/three/build/three.module.js",
                "three/addons/": "../vendor/three/examples/jsm/" } }
 </script>
-<script src="../adapter.js"></script>
-<script src="assets/head.js?r=p2"></script>
-<!-- the neck rig as a classic script, as in ../proposal: the Data side (dataview.js) builds its head poser from window.K8HeadPose when it loads, which can be before the viewer module has run -->
-<script src="headpose.js?r=t2"></script>
-<script src="traces/index.js?r=q2"></script>
-<script src="plain.js?r=f1"></script>
-<script src="beginner.js?r=f1"></script>
-<script src="expert.js?r=f1"></script>
-<script src="insets.js?r=t1"></script>
-<script src="tour.js?r=t1"></script>
-<script src="guide.js?r=f1"></script>
+<!-- The viewer's classic scripts (about 330 KB). The story uses none of them, so they are written in only when the page opens as the
+     viewer (21 Nov 2026). document.write keeps them parser-blocking and in this order, exactly as plain tags were, and the story never
+     fetches them. headpose.js is the neck rig as a classic script, as in ../proposal: the Data side (dataview.js) builds its head poser
+     from window.K8HeadPose when it loads, which can be before the viewer module has run. -->
+<script>
+if (!window.K8_STORY) document.write(
+  '<script src="../adapter.js"><\/script>' +
+  '<script src="assets/head.js?r=p2"><\/script>' +
+  '<script src="headpose.js?r=t2"><\/script>' +
+  '<script src="traces/index.js?r=q2"><\/script>' +
+  '<script src="plain.js?r=f1"><\/script>' +
+  '<script src="beginner.js?r=f1"><\/script>' +
+  '<script src="expert.js?r=f1"><\/script>' +
+  '<script src="insets.js?r=t1"><\/script>' +
+  '<script src="tour.js?r=t1"><\/script>' +
+  '<script src="guide.js?r=f1"><\/script>');
+</script>
 </head>
 <body>
 <!-- ================================================================ the story (styled by story.css, driven by story.js; shown when html.story is set by the boot script)
@@ -358,7 +364,8 @@ if (window.K8_BOOT.lite || window.K8_STORY) {
   <header class="st-top">
     <a class="st-name" href="#s-hook"><b>Motion Pending</b><span class="st-sub"> · Head-pose forecasting · 9th ABC Challenge</span></a>
     <nav aria-label="Chapters">
-      <a href="#s-challenge">Prediction</a><a href="#s-data">Data</a><a href="#s-model">Model</a><a href="#s-results">Results</a><a href="#s-paper">Paper</a>
+      <button class="st-menu" type="button" aria-expanded="false" aria-controls="stChap" aria-label="Chapters"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+      <span class="st-chap" id="stChap"><a href="#s-challenge">Prediction</a><a href="#s-data">Data</a><a href="#s-model">Model</a><a href="#s-results">Results</a><a href="#s-paper">Paper</a></span>
       <a class="st-gh" href="https://github.com/Motion-Pending/motion-pending.github.io" target="_blank" rel="noopener" aria-label="The team repo on GitHub (opens in a new tab)" title="Motion-Pending/motion-pending.github.io on GitHub"><svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
       <a class="st-cta" href="#s-model">Take control</a>
     </nav>
