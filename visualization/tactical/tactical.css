@@ -44,8 +44,8 @@ html.st-motion .pn-answer { background:rgba(223,241,64,.03); }
 .tc { position:relative; height:100svh; min-height:620px; overflow:hidden; background:#010101; border-top:1px solid var(--line); border-bottom:1px solid var(--line); }
 .tc-anchor { position:absolute; top:0; }
 #story .tc-type { position:absolute; left:0; right:0; top:22%; z-index:0; margin:0; max-width:none; text-align:center; pointer-events:none; user-select:none; -webkit-user-select:none;
-  font:600 clamp(64px, 11.2vw, 200px)/.9 var(--sans); letter-spacing:-.045em; color:var(--ink); white-space:nowrap; }
-.tc-poster { position:absolute; left:50%; top:52%; width:min(62vw, 980px); transform:translate(-50%, -50%); z-index:1; opacity:0; pointer-events:none; }
+  font:600 clamp(min(64px, 13vw), 11.2vw, 200px)/.9 var(--sans); letter-spacing:-.045em; color:var(--ink); white-space:nowrap; }   /* 13vw under 571 px: the 64 px floor was wider than a phone */
+.tc-poster { position:absolute; left:50%; top:52%; width:min(62vw, 980px); height:auto; transform:translate(-50%, -50%); z-index:1; opacity:0; pointer-events:none; }
 .tc-nolive .tc-poster { opacity:1; }
 .tc-frame { position:absolute; inset:0; width:100%; height:100%; border:0; z-index:1; pointer-events:none; background:transparent; color-scheme:normal; opacity:0; transition:opacity .8s; }
 .tc-live .tc-frame { opacity:1; }
@@ -87,6 +87,20 @@ html.tc-open .st-top { transform:translateY(-100%); }   /* the bar slides up out
   .tc-r { display:none; }
   .tc-copy { bottom:auto; top:58%; max-width:none; right:20px; }
   .tc-launch { left:20px; right:20px; bottom:6%; text-align:center; }
+}
+/* 21 Nov 2026: a phone held upright (<= 768 px wide and taller than wide; tc.js phonePortrait() asks the same). The live head takes the
+   top half, the copy and Launch stack under it, so the bone text never sits on the head. The section is one window minus the bar and
+   stops right under it, so the bar's "Take control" link lands with Launch in view. Open, the frame still fills the window. */
+@media (max-width: 768px) and (orientation: portrait) {
+  .tc { height:calc(100svh - var(--bar)); min-height:540px; }
+  html.story #story .tc { scroll-margin-top:var(--bar); }
+  #story .tc-type { top:64px; }
+  .tc-l { top:18px; font-size:13px; }
+  html:not(.tc-open) .tc-frame { height:56%; }
+  .tc-poster { top:30%; width:92vw; }
+  .tc-ui { display:flex; flex-direction:column; justify-content:flex-end; gap:22px; padding:0 20px 20px; }
+  .tc-copy, .tc-launch { position:static; max-width:none; }
+  .tc-lead { font-size:20px; }
 }
 
 /* ---------------------------------------------------------------- 4. "Explore it yourself" (#s-explore3d, above the team, 16 Nov)
