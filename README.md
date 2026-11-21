@@ -9,8 +9,8 @@ Jing Hua Ye, Department of Computer Science, Munster Technological University, C
 
 **Result:** joint first place (Gold) in the 9th ABC Challenge.
 
-**Interactive site:** in [`visualization/`](visualization/), run locally (see its README). It covers the challenge,
-the data, a 3D view of the model running, and a dive from the headset down to the chip.
+**Interactive site:** <https://motion-pending.github.io/> (source in [`visualization/`](visualization/)). It covers the
+challenge, the data, a 3D view of the model running, and a dive from the headset down to the chip.
 
 ## The task
 
