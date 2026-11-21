@@ -20,6 +20,8 @@ concurrency:
 
 jobs:
   deploy:
+    # Only the team repo publishes; personal copies (forks) of it skip this job instead of failing.
+    if: github.repository == 'Motion-Pending/motion-pending.github.io'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
