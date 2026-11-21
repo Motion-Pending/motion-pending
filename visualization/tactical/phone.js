@@ -55,7 +55,7 @@
   if (side) side.before(tabs); else document.body.appendChild(tabs);
   // one plain sentence under the user picker, so the tab is not just a lone drop-down
   if ($('userbox')) { const n = document.createElement('p'); n.id = 'sheetUserNote';
-    n.textContent = 'Six recorded players, from calm to very fast head motion. Pick one to replay that recording through the model.';
+    n.textContent = 'Five players: one real recording and four synthetic ones, from calm to very fast head motion. Pick one to run its motion through the model.';
     $('userbox').after(n); }
 
   let sheet = 'card';
@@ -85,6 +85,20 @@
     setSheet(b.dataset.t);
   });
   for (const id of ['inset', 'gazeKey']) if ($(id)) new MutationObserver(syncTabs).observe($(id), { attributes: true, attributeFilter: ['class'] });
+
+  // ---------------------------------------------------------------- words
+  // 21 Nov 2026: the explanations were written for the desktop layout and a mouse. On a phone the panels are tabs of the sheet and there is no
+  // hover, so viewer.mjs (card, inset) and tour.js (tips) pass their text through words(); the desktop text is untouched. touch: only on a touch screen.
+  const WORDS = [
+    [/the top-right panel/g, 'the This step tab'],
+    [/top-right panel/g, 'This step tab'],
+    [/the Key on the right/g, 'the Key in the This step tab'],
+    [/\bhover to go back in time\b/g, 'tap or slide to go back in time'],
+    [/\bhover a step\b/g, 'tap or slide to pick a step'],
+    [/\bClick\b/g, 'Tap'], [/\bclick\b/g, 'tap'],
+    [/scroll to zoom/g, '− / + to zoom', 'touch'],
+  ];
+  const words = s => { if (!s || !form()) return s; for (const [re, to, only] of WORDS) if (!only || html.classList.contains(only)) s = s.replace(re, to); return s; };
 
   // ---------------------------------------------------------------- geometry for the 3D module
   const rect = el => { if (!el || el.hidden) return null; const r = el.getBoundingClientRect(); return r.width && r.height ? r : null; };
@@ -218,5 +232,5 @@
   // A bar that grows or shrinks (the caption line, the wrapped rows) moves the sheet: re-centre the scene.
   if (bar && window.ResizeObserver) { let h = 0; new ResizeObserver(() => { const n = bar.offsetHeight; if (n !== h) { h = n; if (form()) relayout(); } }).observe(bar); }
 
-  window.K8Phone = { apply, form, free, offset, distK, tip, dataStage, setSheet, setMin, sheet: () => sheet, isPhone: !!BOOT.phone };
+  window.K8Phone = { apply, words, form, free, offset, distK, tip, dataStage, setSheet, setMin, sheet: () => sheet, isPhone: !!BOOT.phone };
 })();

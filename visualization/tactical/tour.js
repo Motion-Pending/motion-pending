@@ -142,7 +142,8 @@
     const has = k => !!(k && TIPS[k] && TIPS[k].length);
     const tip = () => G ? G.t : TIPS[key][i];
     // viz-phone: on a touch screen a tip that starts with "Hover ..." starts with its touch wording instead (the tip's `touch` field replaces the words before "to")
-    const say = t => t.touch && doc.documentElement.classList.contains('touch') ? t.text.replace(/^Hover[^:]*? to /, t.touch + ' to ') : t.text;
+    const say = t => { const s = t.touch && doc.documentElement.classList.contains('touch') ? t.text.replace(/^Hover[^:]*? to /, t.touch + ' to ') : t.text;
+      return window.K8Phone ? window.K8Phone.words(s) : s; };   // then the phone's wording (phone.js)
     // viz-phone: on a small screen the bubble is docked by phone.css (over the sheet, or along the top of the scene); phone.js picks which and opens the tab the tip points into
     const docked = () => !!(root.K8Phone && root.K8Phone.form());
     function hideAll() { box.hidden = true; chip.hidden = true; svg.style.display = 'none'; if (api.highlight) api.highlight(null); }   // round 5: the anchor glow goes with the bubble

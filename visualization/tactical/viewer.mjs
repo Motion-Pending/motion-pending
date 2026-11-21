@@ -555,11 +555,13 @@ function drawInset() {
   if (html) html = html.replace(/<svg width="([\d.]+)" height="([\d.]+)"(?![^>]*viewBox)/g, '<svg width="$1" height="$2" viewBox="0 0 $1 $2"')   // round 10: scale to the panel
     .replace(/font-size="(8|8\.5|9)"/g, 'font-size="9.5"');   // ≥ 12 px once scaled to the 410 px panel
   if (html) html = html.replace(/<rect data-grid="/g, '<rect tabindex="0" role="button" aria-label="heatmap: arrow keys move the selected cell" data-grid="').replace(/ data-hx="/g, ' tabindex="0" aria-label="chart: ← → pick a step" data-hx="');
+  if (html) html = PW(html);
   insetEl.classList.toggle('show', !!html); if (html && html !== insetHTML) { insetHTML = html; morphHTML(insetEl, html); }   // round 6: patch, no rebuild
   if (glowSel && glowSel.startsWith('#inset')) { const el = document.querySelector(glowSel); if (el) { el.classList.add('gHL'); glowDom = el; } }   // re-rendered: keep the tip's outline
 }
 const refresh = () => { if (D) update(); else drawInset(); applyHL(); };
 // hover: an inset chart's [data-hx] overlay maps the pointer to a lag (input) or a forecast step k (trajectory, forecast)
+const PW = s => window.K8Phone ? window.K8Phone.words(s) : s;   // a phone's wording (phone.js), the same text elsewhere
 const clamp01 = v => Math.max(0, Math.min(1, v));
 const hxMove = e => {
   const t = e.target.closest && e.target.closest('[data-hx]'); let v = null;
@@ -1019,7 +1021,7 @@ function showCard(key) {
     + (key === 'overview' ? '' : more((p.why ? `<p class="why">${p.why}</p>` : '') + (techT ? `<details><summary>Technical details</summary>${techT}</details>` : ''))); }
   const ovMore = key === 'overview' ? moreBox(ovExtra.join('') + (p.why ? `<p class="why">${p.why}</p>` : '') + legend + (D ? `<div class="src">${D.meta.user} · JS recompute vs ONNX, all shown frames: max |Δ| ${maxDiff.toExponential(1)}</div>` : '')) : '';   // one "Read more" on the overview
   const fk = focusKeyIn(card);                     // a11y F11: keep focus on the same control across the rebuild
-  card.innerHTML = cardHTML(lvlBar, title, body + (key === 'overview' ? startG + ovMore : ''));
+  card.innerHTML = cardHTML(lvlBar, title, PW(body + (key === 'overview' ? startG + ovMore : '')));
   card.querySelectorAll('.lvl button').forEach(btn => btn.onclick = () => { LEVEL = btn.dataset.l; try { localStorage.setItem('k8level', LEVEL); } catch { /* not kept */ } showCard(key);
     if (GUIDE.on()) return GUIDE.refresh();       // the walkthrough: the bubble's expert line follows the level
     if (build >= 0 && key === STEPS[build]) { if (LEVEL === 'beginner') TOUR.enter(key); else TOUR.close(); } });
