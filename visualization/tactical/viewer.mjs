@@ -1128,6 +1128,7 @@ let camTween = null, solo = null, focused = null;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const HOME = [V(5.5, 8.5, 19), V(4.2, -.3, -3.5)];   // round 14: only the viewing direction (and a fallback); the fit is homeView()
 let atHome = false;                                // true while the camera rests on the fitted whole-model view: a resize re-fits it
+let atStep = false;                                // 21 Nov 2026: the same for a step's own picture (stepView); a phone's rotation or sheet fold re-fits it
 // round 7 (camera flow): the look-at point eases along its path while the camera orbits it on a spherical arc (direction slerped, distance
 // lerped), so a move pans / dollies around what it looks at instead of cutting a straight line through walls. Cubic ease-in-out,
 // 0.8–2 s by distance; a new move during a flight starts from the current pose with an ease-out, so it carries on instead of restarting.
@@ -1135,7 +1136,7 @@ let atHome = false;                                // true while the camera rest
 const _qI = new THREE.Quaternion(), _qT = new THREE.Quaternion(), _od = new THREE.Vector3();
 function fly(p, t, fog) {
   setFog(fog);                                     // viz-look P1: only a step's own picture carries a depth fade; every other flight clears it
-  atHome = false;                                  // any other move leaves the fitted view (goHome sets it again after its own fly)
+  atHome = atStep = false;                         // any other move leaves the fitted view (goHome / showBuild set it again after their own fly)
   if (reduce) { camTween = null; camera.position.copy(p); controls.target.copy(t); requestRender(); return; }
   const p0 = camera.position.clone(), t0 = controls.target.clone(), o0 = p0.clone().sub(t0), o1 = p.clone().sub(t);
   const l0 = Math.max(1e-3, o0.length()), l1 = Math.max(1e-3, o1.length()), n0 = o0.clone().divideScalar(l0), n1 = o1.clone().divideScalar(l1);
@@ -1242,6 +1243,12 @@ function fitView(_box, HOME_DIR, fill = .94) {
   }
   return { p: best.t.clone().addScaledVector(HOME_DIR, best.d), t: best.t, d: best.d, r: best.r, rects };
 }
+// a resize while on a step's own picture: the same picture for the new free space; a flight still under way is re-aimed, not cut
+function refitStep() {
+  const v = stepView(STEPS[build]);
+  if (camTween) fly(v.p, v.t, v.fog); else { camTween = null; camera.position.copy(v.p); controls.target.copy(v.t); setFog(v.fog); }
+  atStep = true; buildView = { p: v.p.clone(), t: v.t.clone(), fog: v.fog };
+}
 function goHome(instant) { const h = homeView(); if (instant) { setFog(null); camTween = null; camera.position.copy(h.p); controls.target.copy(h.t); requestRender(); } else fly(h.p, h.t); atHome = true; }
 function focusGroup(name, keepDir) {
   if (!GROUPS[name]) return; _box.makeEmpty(); boxOf(name);
@@ -1344,7 +1351,7 @@ function showBuild(i) {
   showCard(key); stepUI();                         // viz-look P1: the card and the inset are laid out first, so the camera fit knows the free space
   if (key === 'reach') { GROW = { t0: performance.now() + (reduce ? 0 : 900) }; if (reduce) { GROW = null; paintTree(3); } }
   if (key === 'gaze') { fly(G.position.clone().add(V(1.1, 1.2, 3.4)), G.position.clone()); gazeFollow = true; }   // then the camera eases behind the headset
-  else { const v = stepView(key); fly(v.p, v.t, v.fog); }
+  else { const v = stepView(key); fly(v.p, v.t, v.fog); atStep = true; }
   buildView = camTween ? { p: camTween.p.clone(), t: camTween.t.clone(), fog: FOGV } : { p: camera.position.clone(), t: controls.target.clone(), fog: FOGV };   // the guide's 'build' preset
   applyHL(); poseHS0();
   if (!EMB()) TOUR.enter(key);                     // beginner level: the step's tips start once per step per session (embed: no tour)
@@ -1510,7 +1517,7 @@ renderer.domElement.addEventListener('click', e => {
   const k = Math.floor(id / (hit.object === B.out ? NP : 1));
   U.btab = 'ch'; setPick({ b: +m[1], s: Math.floor(k / 32), c: k % 32, t0: performance.now() });
 });
-controls.addEventListener('start', () => { atHome = false; gazeFollow = false; GUIDE.userCamera(); });   // the walkthrough pauses its auto-play
+controls.addEventListener('start', () => { atHome = atStep = false; gazeFollow = false; GUIDE.userCamera(); });   // the walkthrough pauses its auto-play
 controls.addEventListener('change', requestRender);                         // orbit, zoom, pan, and every frame while damping settles          // the user orbits: stop following the gaze
 
 // ================================================================ controls
@@ -1653,7 +1660,9 @@ function cmpStep(dt) {
 
 // ================================================================ round 8: layout glue, tooltip, side panel, keyboard paths
 const sideEl = document.getElementById('side'), barEl = document.getElementById('bar');
-new ResizeObserver(() => { document.documentElement.style.setProperty('--bar-h', `${barEl.offsetHeight}px`); }).observe(barEl);
+// viz-phone: the sheet is placed from --bar-h, so on a phone a new value moves the free space: fit the camera again (the first value lands after showBuild(0))
+new ResizeObserver(() => { const h = `${barEl.offsetHeight}px`, st = document.documentElement.style; if (st.getPropertyValue('--bar-h') === h) return;
+  st.setProperty('--bar-h', h); if (window.K8Phone && window.K8Phone.form()) onResize(); }).observe(barEl);
 function setSide(collapsed) { sideEl.classList.toggle('collapsed', collapsed); const b = document.getElementById('sideCollapse'); b.setAttribute('aria-expanded', !collapsed);
   b.setAttribute('aria-label', collapsed ? 'Expand the side panel' : 'Collapse the side panel'); }
 document.getElementById('sideCollapse').onclick = () => setSide(!sideEl.classList.contains('collapsed'));
@@ -1967,7 +1976,7 @@ setTier(BOOT.tier);
 // round 9 (compat 8, 9): one resize routine: pixel ratio re-read (capped 1.5), sizes, projection; an active guide shot is reframed for the new viewport
 function onResize() { const { width: VW, height: VH } = viewport();   // the window, or the story's panel while embedded
   requestRender(); camera.aspect = VW / VH; cardOffset(card.classList.contains('show')); camera.updateProjectionMatrix(); renderer.setPixelRatio(Math.min(devicePixelRatio || 1, dprCap())); renderer.setSize(VW, VH); labelR.setSize(VW, VH); 
-  if (GUIDE.on() && GUIDE.reframe) GUIDE.reframe(); else if (atHome && !FLY.on && !WEAR.on) goHome(!(EMB() && camTween)); }   // ticket 06b: embedded, a resize during the pull-out re-aims the flight instead of cutting it
+  if (GUIDE.on() && GUIDE.reframe) GUIDE.reframe(); else if (atHome && !FLY.on && !WEAR.on) goHome(!(EMB() && camTween)); else if (atStep && !EMB() && !FLY.on && !WEAR.on) refitStep(); }   // ticket 06b: embedded, a resize during the pull-out re-aims the flight instead of cutting it
 addEventListener('resize', onResize);
 (function watchDpr() { const mq = matchMedia(`(resolution: ${devicePixelRatio || 1}dppx)`); const f = () => { mq.removeEventListener('change', f); onResize(); watchDpr(); }; mq.addEventListener('change', f); })();
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { requestRender(); if (GUIDE.on() && GUIDE.reframe) GUIDE.reframe(); });   // compat 12: once the fonts are in
