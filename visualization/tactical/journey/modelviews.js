@@ -267,7 +267,6 @@ const A_CSS = `
 #mvA .circ:hover { background: #f1f0ea; color: #010101; }
 #mvA .note { position: absolute; left: 40px; bottom: 74px; font-size: 10.5px; color: #6c6e6b; }
 #mvA .st .hit2, #mvA .prule, #mvA .phint, #mvA .morebtn, #mvA .row .n i { display: none; }
-/* phone portrait (21 Nov 2026): the journey's layout. A frosted text block over the top --ph shows one stage; the die sits below it. */
 html.phone #mvA .stage { top: var(--ph); width: 100%; height: calc(100% - var(--ph) - 116px); }
 html.phone #mvA .die { width: min(94vw, calc((100vh - var(--ph) - 136px) * 1.3)); }
 html.phone #mvA .st .hit2 { display: inline; fill: transparent; }
@@ -497,7 +496,6 @@ const B_CSS = `
 #mvB .tick { position: absolute; left: 0; right: 0; bottom: 0; height: 36px; border-top: 1px solid #2f3234; overflow: hidden; font: 11.5px/36px GeistMono; letter-spacing: .05em; color: #6c6e6b; white-space: nowrap; padding-left: 40px; }
 #mvB .tick b { color: #f1f0ea; font-weight: 400; }
 #mvB .pause { bottom: 54px; }
-/* its own row, above SEE IT PREDICT; the flow above it gives up that height. Its button replaces the view's PAUSE button (space still works). */
 #mvB .scrub { position: absolute; left: 40px; right: 40px; bottom: 112px; display: flex; align-items: center; gap: 14px; }
 #mvB .vp { bottom: 160px; }
 #mvB > .pause { display: none; }
@@ -511,7 +509,6 @@ const B_CSS = `
 #mvB .scrub input::-moz-range-thumb { width: 4px; height: 18px; background: #dff140; border: 0; border-radius: 0; }
 #mvB .scrub input:focus-visible { outline: 2px solid #dff140; outline-offset: 2px; }
 #mvB .scrub .stime { font: 11.5px GeistMono; letter-spacing: .05em; color: #b0b0a9; min-width: 128px; text-align: right; font-variant-numeric: tabular-nums; }
-/* phone portrait (21 Nov 2026): the detail panel is a bottom sheet; zoomed, the flow uses the space between the header and the sheet */
 html.phone #mvB .bar { left: 16px; right: 16px; top: 64px; gap: 4px 14px; font-size: 10px; }
 html.phone #mvB h1 { left: 16px; right: 16px; top: 122px; font-size: 26px; }
 html.phone #mvB h1 small { font-size: 13px; }
