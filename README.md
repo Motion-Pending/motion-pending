@@ -163,7 +163,9 @@ agreement asks for are in [`LICENSE-MODELS.md`](LICENSE-MODELS.md).
   - Used in `visualization/tactical/traces/test50.js`, `visualization/tactical/hero/clip.js` and
     `visualization/tactical/figs/challenge.svg`.
 - **The site's 3D models, fonts and libraries**: the "Meta Quest 3" headset model by Elin (CC BY 4.0, modified),
-  three.js (MIT), Google's Draco decoder (Apache 2.0) and the Geist fonts (SIL OFL 1.1). The full list is in
+  the head mesh from Blender Studio's Human Base Meshes (CC0), the circuit board modelled after iFixit's
+  "Meta Quest 3 Chip ID" photos, three.js (MIT), Google's Draco decoder (Apache 2.0) and the Geist fonts
+  (SIL OFL 1.1). The full list, including the sources of the Blender files that are not in this repo, is in
   [`visualization/README.md`](visualization/README.md).
 
 ## Licence

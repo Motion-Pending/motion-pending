@@ -34,9 +34,12 @@ If you use these files, cite our paper (see `CITATION.cff`) and BOXRR-23, as its
 
 ## Restrictions carried over from BOXRR-23
 
-Its data use agreement applies to anything derived from the data. In particular:
-- no attempt to re-identify the users
-- no inference of sensitive or health attributes
+Its data use agreement applies to anything derived from the data. In particular (BOXRR-23 datasheet and data
+nutrition label, <https://rdi.berkeley.edu/metaverse/boxrr-23/>):
+- no attempt to link users to their real-world identities (re-identification)
+- no attempt to contact the users
+- no inference of sensitive attributes
+- no use for health research
 
 This repository contains none of the BOXRR-23 recordings themselves. To get the data, go to
 https://rdi.berkeley.edu/metaverse/boxrr-23/
