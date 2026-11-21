@@ -17,7 +17,8 @@ export function loadTrace() {
     window.TRACES = window.TRACES || {};
     const s = document.createElement('script'); s.src = '../traces/test50.js?r=q1';
     s.onload = () => { TRACE = window.TRACES.test50 || Object.values(window.TRACES)[0]; ok(TRACE); };
-    s.onerror = () => bad(new Error('traces/test50.js did not load')); document.head.append(s);
+    s.onerror = () => { loading = null; s.remove(); bad(new Error('traces/test50.js did not load')); };   // a later dive tries again
+    document.head.append(s);
   });
   return loading;
 }
@@ -97,7 +98,10 @@ const CSS = `
 .mv .pause { position: absolute; left: 40px; bottom: 30px; font: 11px GeistMono; letter-spacing: .08em; color: #6c6e6b; background: none; border: 1px solid #2f3234; color: #b0b0a9; padding: 7px 12px; cursor: pointer; }
 .mv .pause:hover { border-color: #f1f0ea; color: #f1f0ea; }
 @keyframes mvflow { to { stroke-dashoffset: -100; } }
+html.phone .mv .pause { left: 12px; bottom: calc(66px + env(safe-area-inset-bottom)); min-height: 44px; }
 `;
+// html.phone is set by journey.js layout() (portrait, at most 768 px wide): the one phone test, shared with the journey
+const isPhone = () => document.documentElement.classList.contains('phone');
 export function addCSS(extra) { const s = document.createElement('style'); s.textContent = CSS + extra; document.head.append(s); }
 const heat = v => `rgba(223,241,64,${Math.min(1, .05 + Math.abs(v) * 2.2)})`;   // a channel's activation as acid-yellow brightness
 const cellFill = v => { const a = Math.min(1, Math.abs(v) / .063); return v > 0 ? `rgba(223,241,64,${.25 + .75 * a})` : `rgba(176,176,169,${.2 + .6 * a})`; };
@@ -289,6 +293,33 @@ const A_CSS = `
 #mvA .circ { all: unset; width: 44px; height: 44px; border: 1px solid #f1f0ea; border-radius: 50%; display: grid; place-items: center; font-size: 17px; cursor: pointer; }
 #mvA .circ:hover { background: #f1f0ea; color: #010101; }
 #mvA .note { position: absolute; left: 40px; bottom: 74px; font-size: 10.5px; color: #6c6e6b; }
+#mvA .st .hit2, #mvA .prule, #mvA .phint, #mvA .morebtn, #mvA .row .n i { display: none; }
+/* phone portrait (21 Nov 2026): the journey's layout. A frosted text block over the top --ph shows one stage; the die sits below it. */
+html.phone #mvA .stage { top: var(--ph); width: 100%; height: calc(100% - var(--ph) - 116px); }
+html.phone #mvA .die { width: min(94vw, calc((100vh - var(--ph) - 136px) * 1.3)); }
+html.phone #mvA .st .hit2 { display: inline; fill: transparent; }
+html.phone #mvA .st .dot { r: 16px; } html.phone #mvA .st .core { r: 6px; } html.phone #mvA .st:hover .dot, html.phone #mvA .st.on .dot { r: 20px; }
+html.phone #mvA .panel { left: 0; right: 0; width: auto; height: var(--ph); padding: 12px 16px 64px; overflow: hidden; display: flex; flex-direction: column;
+  background: rgba(1,1,1,.35); -webkit-backdrop-filter: blur(16px); backdrop-filter: blur(16px); }
+html.phone #mvA.more .panel { height: var(--pmore); overflow-y: auto; }
+html.phone #mvA h1 { flex: none; min-height: 44px; display: flex; align-items: center; margin: 0 112px 6px 0; font-size: 24px; }
+html.phone #mvA h1 br { display: none; }
+html.phone #mvA .prule { display: block; flex: none; position: relative; height: 1px; background: #2f3234; margin: 4px 0 10px; }
+html.phone #mvA .prule::after { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: calc(var(--p, 0) * 100%); background: #dff140; transition: width .4s; }
+html.phone #mvA:not(.has-open) .phint { display: block; margin: 0; font-size: 11px; line-height: 1.5; color: #b0b0a9; }
+html.phone #mvA .row, html.phone #mvA .row:last-child { display: none; border: 0; }
+html.phone #mvA .row.open { display: block; }
+html.phone #mvA .row > button { display: flex; gap: 14px; min-height: 0; padding-bottom: 6px; font: 500 12px/1.3 GeistMono, monospace; letter-spacing: .08em; text-transform: uppercase; color: #f1f0ea; }
+html.phone #mvA .row .n { font: inherit; color: #dff140; } html.phone #mvA .row .n i { display: inline; font-style: normal; color: #6c6e6b; }
+html.phone #mvA .row .pm, html.phone #mvA .row .wg { display: none; }
+html.phone #mvA .row .body { padding: 0; }
+html.phone #mvA .row .body p { font-size: 15px; line-height: 1.32; margin: 0; cursor: pointer; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; }
+html.phone #mvA.more .row .body p { display: block; margin-bottom: 14px; } html.phone #mvA.more .row .wg { display: block; }
+html.phone #mvA .nav { top: calc(var(--ph) - 56px); right: 12px; bottom: auto; gap: 10px; }
+html.phone #mvA.has-open .morebtn { display: block; position: absolute; left: 16px; top: calc(var(--ph) - 56px); height: 44px; padding: 0; background: none; border: 0;
+  font-size: 11px; color: #b0b0a9; cursor: pointer; }
+html.phone #mvA.more .nav, html.phone #mvA.more .morebtn { top: calc(var(--pmore) - 56px); }
+html.phone #mvA .note { left: 16px; right: 16px; top: calc(var(--ph) + 8px); bottom: auto; font-size: 9px; line-height: 1.5; }
 `;
 // floorplan geometry (SVG units, viewBox 1300 x 1000) and the point each stage zooms to (cx, cy, scale)
 const AZ = { input: [105, 500, 2.6], feat: [215, 500, 2.6], mirror: [230, 620, 2.4], proj: [345, 500, 2.2], blocks: [665, 640, 1.3],
@@ -301,7 +332,8 @@ export function makeA(ctx) {
     tick(dt, playing) { if (pulseTick && playing) pulseTick(dt); },
     build() {
       layer.innerHTML = `<div class="stage"><div class="die"></div></div>
-        <aside class="panel"><h1>k8:<br>Inside the NPU</h1><div class="rows"></div></aside>
+        <aside class="panel"><h1>k8:<br> Inside the NPU</h1><div class="prule"></div><p class="phint mono">Tap a stage on the chip, or use → to step through</p><div class="rows"></div></aside>
+        <button type="button" class="morebtn mono" aria-expanded="false">MORE +</button>
         <div class="nav"><button class="circ" data-d="-1" aria-label="Previous stage">←</button><button class="circ" data-d="1" aria-label="Next stage">→</button></div>
         <div class="note mono">ILLUSTRATIVE FLOORPLAN, NOT TO SCALE · LIVE VALUES: TEST PLAYER, QUARTER SPEED</div>`;
       const die = layer.querySelector('.die'); die.innerHTML = dieSVG();
@@ -315,7 +347,7 @@ export function makeA(ctx) {
       for (const s of STAGES) {
         const [x, y, w, h] = HIT[s.k], [cx, cy] = s.k === 'blocks' ? [735, 500] : AZ[s.k], g = document.createElementNS(NS, 'g');   // Blocks: dot between the lanes, zoom centre lower (it frames the reach tree too)
         g.setAttribute('class', 'st'); g.dataset.k = s.k; g.setAttribute('tabindex', '0'); g.setAttribute('role', 'button'); g.setAttribute('aria-label', s.title);
-        g.innerHTML = (s.k === 'blocks' ? '<rect class="hit" x="300" y="760" width="700" height="185"/>' : '') + `<rect class="hit" x="${x}" y="${y}" width="${w}" height="${h}"/><circle class="dot" cx="${cx}" cy="${cy}" r="10"/><circle class="core" cx="${cx}" cy="${cy}" r="3.5"/>
+        g.innerHTML = (s.k === 'blocks' ? '<rect class="hit" x="300" y="760" width="700" height="185"/>' : '') + `<rect class="hit" x="${x}" y="${y}" width="${w}" height="${h}"/><circle class="hit2" cx="${cx}" cy="${cy}" r="54"/><circle class="dot" cx="${cx}" cy="${cy}" r="10"/><circle class="core" cx="${cx}" cy="${cy}" r="3.5"/>
           <text class="lab" x="${cx + 20}" y="${cy - 16}">${s.short.split('\n')[0]}</text>`;
         g.addEventListener('click', () => api.select(s.k)); g.addEventListener('keydown', e => { if (e.key === 'Enter') api.select(s.k); });
         svg.append(g);
@@ -327,19 +359,29 @@ export function makeA(ctx) {
       // panel rows
       const rows = layer.querySelector('.rows');
       for (const s of STAGES) {
-        rows.insertAdjacentHTML('beforeend', `<div class="row" data-k="${s.k}"><button type="button" aria-expanded="false"><span class="n">${s.n}</span><span>${s.title}</span><span class="pm">+</span></button><div class="body"><p>${s.text}</p><div class="wg"></div></div></div>`);
+        rows.insertAdjacentHTML('beforeend', `<div class="row" data-k="${s.k}"><button type="button" aria-expanded="false"><span class="n">${s.n}<i>/${String(STAGES.length).padStart(2, '0')}</i></span><span>${s.title}</span><span class="pm">+</span></button><div class="body"><p>${s.text}</p><div class="wg"></div></div></div>`);
         rows.lastElementChild.querySelector('button').addEventListener('click', () => api.select(sel === s.k ? null : s.k));
       }
       layer.querySelectorAll('.circ').forEach(b => b.addEventListener('click', () => {
         const j = sel ? STAGES.findIndex(s => s.k === sel) : -1, d = +b.dataset.d; api.select(STAGES[(j + d + STAGES.length) % STAGES.length].k); }));
+      // phone: the stage text is clamped to three lines; MORE (or a tap on it) opens the whole text and its live widget
+      const more = on => { layer.classList.toggle('more', on); const m = layer.querySelector('.morebtn'); m.textContent = on ? 'LESS —' : 'MORE +'; m.setAttribute('aria-expanded', on); };
+      api.more = more;
+      layer.querySelector('.morebtn').addEventListener('click', () => more(!layer.classList.contains('more')));
+      rows.addEventListener('click', e => { if (isPhone() && e.target.closest('.body p')) more(!layer.classList.contains('more')); });
+      addEventListener('resize', () => api.select(sel));            // the die's size follows the window: zoom again at the new size
       api.select(null);
     },
     select(k) {
       sel = k;
       const die = layer.querySelector('.die'); if (!die) return;
-      if (!k) die.style.transform = 'rotateX(34deg) rotateZ(-12deg)';
+      const phone = isPhone();                                       // phone: a flatter tilt, so the narrow die keeps its height
+      if (!k) die.style.transform = phone ? 'rotateX(22deg) rotateZ(-8deg)' : 'rotateX(34deg) rotateZ(-12deg)';
       else { const [cx, cy, s] = AZ[k], W = die.offsetWidth, H = die.offsetHeight;
-        die.style.transform = `rotateX(24deg) rotateZ(-6deg) scale(${s}) translate(${(-(cx / 1300 - .5) * W).toFixed(1)}px, ${(-(cy / 1000 - .5) * H).toFixed(1)}px)`; }
+        die.style.transform = `${phone ? 'rotateX(18deg) rotateZ(-4deg)' : 'rotateX(24deg) rotateZ(-6deg)'} scale(${s}) translate(${(-(cx / 1300 - .5) * W).toFixed(1)}px, ${(-(cy / 1000 - .5) * H).toFixed(1)}px)`; }
+      const j = STAGES.findIndex(s => s.k === k);
+      layer.classList.toggle('has-open', j >= 0); layer.querySelector('.prule').style.setProperty('--p', (j + 1) / STAGES.length);
+      if (api.more) api.more(false);
       layer.querySelectorAll('.st').forEach(g => g.classList.toggle('on', g.dataset.k === k));
       layer.querySelectorAll('.row').forEach(r => { const on = r.dataset.k === k; r.classList.toggle('open', on);
         r.querySelector('button').setAttribute('aria-expanded', on); r.querySelector('.pm').textContent = on ? '—' : '+'; });
@@ -516,6 +558,19 @@ const B_CSS = `
 #mvB .scrub input::-moz-range-thumb { width: 4px; height: 18px; background: #dff140; border: 0; border-radius: 0; }
 #mvB .scrub input:focus-visible { outline: 2px solid #dff140; outline-offset: 2px; }
 #mvB .scrub .stime { font: 11.5px GeistMono; letter-spacing: .05em; color: #b0b0a9; min-width: 128px; text-align: right; font-variant-numeric: tabular-nums; }
+/* phone portrait (21 Nov 2026): the detail panel is a bottom sheet; zoomed, the flow uses the space between the header and the sheet */
+html.phone #mvB .bar { left: 16px; right: 16px; top: 64px; gap: 4px 14px; font-size: 10px; }
+html.phone #mvB h1 { left: 16px; right: 16px; top: 122px; font-size: 26px; }
+html.phone #mvB h1 small { font-size: 13px; }
+html.phone #mvB .vp { left: 16px; right: 16px; top: 286px; bottom: 166px; }
+html.phone #mvB.zoomed .vp { top: 122px; }
+html.phone #mvB .detail { z-index: 2; left: 0; right: 0; top: auto; width: auto; height: 50%; padding: 18px 16px 76px; border-left: 0; border-top: 1px solid #2f3234; transform: translateY(100%); }
+html.phone #mvB.zoomed .detail { transform: none; }
+html.phone #mvB .detail .x { top: 10px; right: 12px; width: 44px; height: 44px; }
+html.phone #mvB .detail h2 { font-size: 24px; margin-right: 56px; } html.phone #mvB .detail p { font-size: 15px; }
+html.phone #mvB .scrub { left: 16px; right: 16px; bottom: 112px; gap: 10px; }
+html.phone #mvB .scrub .sbtn { width: 44px; height: 44px; } html.phone #mvB .scrub .stime { min-width: 0; font-size: 10px; }
+html.phone #mvB .tick { bottom: 66px; padding-left: 16px; }
 `;
 // node layout in the flow's own 1360 x 470 space
 const BN = { input: [0, 120, 150], feat: [195, 20, 190], mirror: [195, 300, 190], proj: [430, 120, 175], blocks: [650, 40, 270], head: [965, 20, 160], traj: [965, 270, 160], out: [1170, 120, 190] };
@@ -565,14 +620,16 @@ export function makeB(ctx) {
     },
     select(k) {
       sel = k; const flow = layer.querySelector('.flow'), vp = layer.querySelector('.vp'); if (!flow) return;
+      layer.classList.toggle('zoomed', !!k); layer.querySelector('h1').style.opacity = k ? .15 : 1;   // first: on a phone .zoomed resizes .vp
       const W = vp.clientWidth, H = vp.clientHeight; fit = Math.min(1, W / 1360, H / 470);
-      layer.classList.toggle('zoomed', !!k); layer.querySelector('h1').style.opacity = k ? .15 : 1;
       layer.querySelectorAll('.node').forEach(n => n.classList.toggle('on', n.dataset.k === k));
       if (!k) { flow.style.transform = `translate(${((W - 1360 * fit) / 2).toFixed(0)}px, 0) scale(${fit})`; detailLive = null; ctx.setZoomed(false); return; }
       // zoom: scale the flow so the chosen node is big, centred in the space left of the detail panel
-      const n = flow.querySelector(`.node[data-k="${k}"]`), panel = layer.querySelector('.detail').offsetWidth, room = W - panel + 40;
-      const s = Math.min(2.2, (room * .55) / n.offsetWidth, (H * .9) / n.offsetHeight), cx = n.offsetLeft + n.offsetWidth / 2, cy = n.offsetTop + n.offsetHeight / 2;
-      flow.style.transform = `translate(${(room / 2 - cx * s).toFixed(0)}px, ${(H / 2 - cy * s).toFixed(0)}px) scale(${s.toFixed(3)})`;
+      // (phone: centred across the full width, in the height left above the bottom sheet)
+      const n = flow.querySelector(`.node[data-k="${k}"]`), det = layer.querySelector('.detail'), phone = isPhone();
+      const room = phone ? W : W - det.offsetWidth + 40, Hv = phone ? Math.max(80, det.offsetTop - vp.offsetTop) : H;
+      const s = Math.min(2.2, (room * (phone ? .8 : .55)) / n.offsetWidth, (Hv * .9) / n.offsetHeight), cx = n.offsetLeft + n.offsetWidth / 2, cy = n.offsetTop + n.offsetHeight / 2;
+      flow.style.transform = `translate(${(room / 2 - cx * s).toFixed(0)}px, ${(Hv / 2 - cy * s).toFixed(0)}px) scale(${s.toFixed(3)})`;
       const st = byK[k], d = layer.querySelector('.detail');
       d.querySelector('.k').textContent = st.n + ' · ' + st.short.replace('\n', ' · ');
       d.querySelector('h2').textContent = st.title; d.querySelector('p').textContent = st.text;
