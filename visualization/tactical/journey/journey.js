@@ -22,7 +22,7 @@ import { makeGLTFLoader } from '../hero_model.js';                // the shared 
 import { applyBoardTextures } from './board_textures.js';   // code-drawn surface detail for the replica board
 import { DIE, NPU_N, NPU_K8, npuTile, dieTexture } from './die_texture.js';   // the die's picture, layout and NPU tiles
 const BOARD_URL = new URL('../assets/board_q3.glb?r=b7', import.meta.url).href;   // models/board_build.py writes it
-import { makeA, makeB } from './modelviews.js';
+import { makeA, makeB } from './modelviews.js?r=ph1';
 
 // Which model level to show: ?model=a (etched on the die), ?model=b (console) or ?model=3d (the real viewer in an iframe).
 const MODEL = (new URLSearchParams(location.search).get('model') || 'a').toLowerCase();
