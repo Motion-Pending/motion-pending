@@ -93,7 +93,7 @@ let EMBT = null;                                    // ticket 06b: { at: ms, fn 
 // K8Viewer.ready: resolves once the first trace has been drawn. The extra catch() only marks the rejection as seen (no "uncaught" noise);
 // anyone awaiting READY still gets it.
 let readyOk, readyBad, readyDone = false; const READY = new Promise((ok, bad) => { readyOk = ok; readyBad = bad; }); READY.catch(() => {});
-try { if (window.K8_NOSTART) throw new Error(window.K8_NOSTART); renderer = new THREE.WebGLRenderer({ antialias: BOOT.tier === 'full', ...(EMB() && EMB().clear && { alpha: true }) }); }   // P1: smoothing of edges (antialiasing) only on the full tier; it is fixed when the 3D context is made
+try { if (window.K8_NOSTART) throw new Error(window.K8_NOSTART); renderer = new THREE.WebGLRenderer({ antialias: BOOT.tier === 'full' || !!BOOT.phone, ...(EMB() && EMB().clear && { alpha: true }) }); }   // P1: smoothing of edges (antialiasing) only on the full tier and on a phone; it is fixed when the 3D context is made
 catch (err) { if (EMB()) { readyBad(err); window.K8Viewer = { ready: READY }; }   // embedded: no picture version here; the story keeps its own picture
   else if (BOOT.startLite) BOOT.startLite('WebGL2 could not start on this computer.'); throw err; }   // P1: no 3D → the picture version (lite.js) takes over; this module stops here
 renderer.localClippingEnabled = true;   // round 5: guide block shots clip the walls to their live part
@@ -1884,7 +1884,9 @@ const TIER_P = { full: { dpr: 1.5, glow: true, haze: true, small: true, sheets: 
                  min: { dpr: .75, glow: false, haze: false, small: false, sheets: true, rate: 4 } };
 // ticket 06b: embedded, the canvas may grow to the whole window on the story's last step, so its drawing buffer uses up to 2 device pixels
 // per CSS pixel (SPEC A6: sharp at the largest size). Not embedded: the tier's own cap, as before.
-const dprCap = () => EMB() ? 2 : TP.dpr;
+// 21 Nov 2026: a phone (BOOT.phone, index.html) starts on light, whose cap of 1 drew its ~0.26 MP screen at a third of its pixel density and
+// looked blurry; it gets 2 (about 1 MP, a third of a 1440 × 900 desktop at 1.5) and edge smoothing, unless the auto tier steps down to min.
+const dprCap = () => EMB() ? 2 : BOOT.phone && TIER !== 'min' ? 2 : TP.dpr;
 let TIER = null, TP = TIER_P.full, tierMode = BOOT.tierMode, speedTouched = false, tierHold = 0;
 const HISTW = [SL.input, SL.feat, SL.proj, ...BL.map(B => B.out)];
 ray.layers.enable(1);                               // picking still sees the box walls after the min tier moves them to layer 1 (not drawn)
