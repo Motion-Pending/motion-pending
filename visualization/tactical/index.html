@@ -434,7 +434,7 @@ if (window.K8_BOOT.lite || window.K8_STORY) {
         <div class="dk-text">
           <p class="st-kicker">Prediction · what comes out</p>
           <h2>200 milliseconds out.</h2>
-          <p>It must say where the head will point over the next 20 samples. Only the 20th is scored, 200&nbsp;ms ahead. This is one real input and its answer, drawn to scale, from a player the model never trained on. Each of the four numbers is drawn on its own vertical scale.</p>
+          <p>It must say where the head will point over the next 20 samples. Only the 20th is scored, 200&nbsp;ms ahead. This is one real input and its answer, drawn to scale, from a player the model never trained on (a Beat Saber session from the public QuestSet dataset, CC BY 4.0). Each of the four numbers is drawn on its own vertical scale.</p>
           <p class="st-note">Entries are judged on accuracy, size, latency and innovation, on people and headsets the model has never seen.</p>
         </div>
         <figure class="dk-fig"><div class="dk-panel pn-plot pn-answer">
@@ -462,6 +462,7 @@ if (window.K8_BOOT.lite || window.K8_STORY) {
           <h2>394,171 recordings.</h2>
           <p>The training data is BOXRR-23, a public collection of people playing VR games. For one batch of our downloads we kept the full log: 394,171 recordings from 9,217 players. Nobody cleaned it: headsets write at different speeds, clocks stick, and in most recordings the head hardly moves.</p>
           <p class="st-note">The dots show proportions: one dot stands for about 394 recordings, and which dots stay lit is not which recordings passed.</p>
+          <p class="st-note">The counts in this section are real, from our own download log of BOXRR-23 (Nair et al., CC BY-NC-SA 4.0). No recording from it is shown on this site: its data use agreement does not allow passing them on, so the recordings drawn on the Data side are synthetic.</p>
         </div>
         <figure class="dk-fig"><div class="dk-panel pn-dots">
           <span class="pn-tag">raw BOXRR-23 · one dot ≈ 394 recordings</span>
@@ -864,7 +865,7 @@ if (window.K8_BOOT.lite || window.K8_STORY) {
 <div id="tip" role="tooltip" hidden></div>
 <div id="srLive" class="sr" aria-live="polite"></div>
 <!-- viz-data: Data | Model switch. side.js adds the two tabs to #brand and the #dataView container, sets body[data-side] and fires "k8:side"; the Data side itself loads on first use. -->
-<script src="side.js?r=s1"></script>
+<script src="side.js?r=src1"></script>
 <!-- viz-phone: sets html[data-form] and html.touch, builds the sheet's tab strip, and gives the 3D module window.K8Phone (free rectangle, view offset) -->
 <script src="phone.js?r=p1"></script>
 

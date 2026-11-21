@@ -820,7 +820,7 @@ function mountEnding() {
   $('psub').textContent = 'LEVEL 01 · 200 MS AHEAD'; $('ptitle').textContent = 'The prediction';
   const rows = $('rows'); rows.replaceChildren();
   const d = document.createElement('div'); d.className = 'ending';
-  const p1 = document.createElement('p'); p1.textContent = 'The solid headset is the player\'s real head. The yellow ghost is where k8 says it will be 200 ms from now, drawn before it gets there. The arc between the two pointers is the error.';
+  const p1 = document.createElement('p'); p1.textContent = 'The solid headset is a real player\'s head: 12 s of Beat Saber from the public QuestSet dataset (CC BY 4.0), which k8 never trained on. The yellow ghost is where k8 says it will be 200 ms from now, drawn before it gets there. The arc between the two pointers is the error.';
   const p2 = document.createElement('p'); p2.className = 'dim'; p2.textContent = 'The error shown is for the prediction that has just come due, the one made 200 ms ago.';
   const ro = document.createElement('div'); ro.className = 'facts ro';
   ro.innerHTML = '<div>ERROR NOW · <b data-r="err">–</b></div><div>IF THE HEAD HELD STILL · <b data-r="hold">–</b></div><div>TEST-SET MEAN, 1,049 PLAYERS · <b>4.50°</b></div>';
