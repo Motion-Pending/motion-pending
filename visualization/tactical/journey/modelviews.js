@@ -517,7 +517,7 @@ html.phone #mvB h1 { left: 16px; right: 16px; top: 122px; font-size: 26px; }
 html.phone #mvB h1 small { font-size: 13px; }
 html.phone #mvB .vp { left: 16px; right: 16px; top: 286px; bottom: 166px; }
 html.phone #mvB.zoomed .vp { top: 122px; }
-html.phone #mvB .detail { z-index: 2; left: 0; right: 0; top: auto; width: auto; height: 50%; padding: 18px 16px 76px; border-left: 0; border-top: 1px solid #2f3234; transform: translateY(100%); }
+html.phone #mvB .detail { z-index: 2; left: 0; right: 0; top: auto; bottom: calc(66px + env(safe-area-inset-bottom)); width: auto; height: calc(50% - 50px); padding: 18px 16px 24px; border-left: 0; border-top: 1px solid #2f3234; transform: translateY(calc(100% + 66px + env(safe-area-inset-bottom))); }
 html.phone #mvB.zoomed .detail { transform: none; }
 html.phone #mvB .detail .x { top: 10px; right: 12px; width: 44px; height: 44px; }
 html.phone #mvB .detail h2 { font-size: 24px; margin-right: 56px; } html.phone #mvB .detail p { font-size: 15px; }
@@ -538,7 +538,7 @@ export function makeB(ctx) {
       if (scrubBtn) { scrubBtn.textContent = p ? '❚❚' : '▶'; scrubBtn.setAttribute('aria-label', p ? 'Pause' : 'Play'); }
     },
     build() {
-      layer.innerHTML = `<div class="bar mono"><span class="live">LIVE · QUARTER SPEED</span><span>SAMPLE <b data-h="t"></b></span><span>T <b data-h="time"></b></span><span class="sp"></span><span>44,196 BYTES</span><span>≈78 µS / CALL ON A PC</span></div>
+      layer.innerHTML = `<div class="bar mono"><span class="live">LIVE · QUARTER SPEED</span><span>SAMPLE <b data-h="t"></b></span><span>T <b data-h="time"></b></span><span class="sp"></span><span>44,196 BYTES</span><span>≈78 <span style="text-transform:none">µs</span> / CALL ON A PC</span></div>
         <h1>One prediction, every 10 ms.<small>The newest head orientation comes in on the left. Seven stages later, 20 future poses come out on the right. Click a stage.</small></h1>
         <div class="vp"><div class="flow"><svg class="wires"></svg></div></div>
         <aside class="detail" aria-live="polite"><button class="x" type="button" aria-label="Close">✕</button><div class="k"></div><h2></h2><p></p><div class="wg"></div></aside>
@@ -568,7 +568,7 @@ export function makeB(ctx) {
     },
     select(k) {
       sel = k; const flow = layer.querySelector('.flow'), vp = layer.querySelector('.vp'); if (!flow) return;
-      layer.classList.toggle('zoomed', !!k); layer.querySelector('h1').style.opacity = k ? .15 : 1;
+      layer.classList.toggle('zoomed', !!k); layer.querySelector('h1').style.opacity = k ? (isPhone() ? 0 : .15) : 1;
       const W = vp.clientWidth, H = vp.clientHeight; fit = Math.min(1, W / 1360, H / 470);
       layer.querySelectorAll('.node').forEach(n => n.classList.toggle('on', n.dataset.k === k));
       if (!k) { flow.style.transform = `translate(${((W - 1360 * fit) / 2).toFixed(0)}px, 0) scale(${fit})`; detailLive = null; ctx.setZoomed(false); return; }
