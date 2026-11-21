@@ -566,18 +566,37 @@ const hxMove = e => {
   if (t) { const r = t.getBoundingClientRect(), n = +t.dataset.n, i = Math.round(clamp01((e.clientX - r.left) / r.width) * (n - 1)); v = t.dataset.rev === '1' ? n - 1 - i : i + (+t.dataset.off || 0); }
   if (v !== U.hov) { U.hov = v; drawInset(); applyHL(); poseHS0(); }
 };
-insetEl.addEventListener('pointermove', hxMove);
 // viz-phone: a finger has no hover. A tap or a slide on a chart picks the step and the pick stays after the finger lifts; a tap anywhere else in the figure clears it.
-insetEl.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') hxMove(e); });
+// 21 Nov 2026: a finger also scrolls the panel, so on touch nothing is picked until the gesture shows what it is: a tap (lifted within 8 px)
+// acts at once on the place first touched; a sideways slide on a chart picks steps as it goes; anything else is a scroll, which the browser
+// ends with pointercancel. A mouse acts on pointerdown, as before.
+let TT = null;                                     // the finger on the inset: { id, x, y, t (target), r (its heatmap's rect, kept in case a redraw replaces it), slide }
+insetEl.addEventListener('pointermove', e => {
+  if (e.pointerType === 'mouse') return hxMove(e);
+  if (!TT || e.pointerId !== TT.id) return;
+  if (!TT.slide) { const dx = e.clientX - TT.x, dy = e.clientY - TT.y; if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy)) return; TT.slide = true; }
+  hxMove(e);
+});
 insetEl.addEventListener('pointerleave', e => { if (e.pointerType !== 'mouse') return; if (U.hov !== null) { U.hov = null; drawInset(); applyHL(); poseHS0(); } });
 // clicks: [data-grid] heatmaps map the pointer to (row, col); [data-act] rows, tabs and toggles.
 // pointerdown, not click: while playing, the inset is redrawn ~8×/s, so a click's down and up can land on different (replaced) elements
 insetEl.addEventListener('pointerdown', e => {
   if (e.button !== 0) return;
+  if (e.pointerType === 'mouse') return insetAct(e.target, e.clientX, e.clientY);
   const g = e.target.closest && e.target.closest('[data-grid]');
-  if (g) { const r = g.getBoundingClientRect(), rows = +g.dataset.rows, cols = +g.dataset.cols;
-    return gridPick(g.dataset.grid, Math.min(rows - 1, Math.floor(clamp01((e.clientY - r.top) / r.height) * rows)), Math.min(cols - 1, Math.floor(clamp01((e.clientX - r.left) / r.width) * cols))); }
-  const a = e.target.closest && e.target.closest('[data-act]'); if (!a) return;
+  TT = { id: e.pointerId, x: e.clientX, y: e.clientY, t: e.target, r: g && g.getBoundingClientRect(), slide: false };
+});
+addEventListener('pointerup', e => {
+  const t = TT; if (!t || e.pointerId !== t.id) return; TT = null;
+  if (t.slide || Math.hypot(e.clientX - t.x, e.clientY - t.y) >= 8) return;
+  hxMove({ target: t.t, clientX: t.x }); insetAct(t.t, t.x, t.y, t.r);
+});
+insetEl.addEventListener('pointercancel', e => { if (TT && e.pointerId === TT.id) TT = null; });
+function insetAct(target, x, y, rect) {
+  const g = target.closest && target.closest('[data-grid]');
+  if (g) { const r = rect || g.getBoundingClientRect(), rows = +g.dataset.rows, cols = +g.dataset.cols;
+    return gridPick(g.dataset.grid, Math.min(rows - 1, Math.floor(clamp01((y - r.top) / r.height) * rows)), Math.min(cols - 1, Math.floor(clamp01((x - r.left) / r.width) * cols))); }
+  const a = target.closest && target.closest('[data-act]'); if (!a) return;
   const [k, v] = a.dataset.act.split(':');
   if (k === 'frow') U.fpick = U.fpick === +v ? null : +v;
   else if (k === 'fexp') U.fexp = !U.fexp;
@@ -586,7 +605,7 @@ insetEl.addEventListener('pointerdown', e => {
     if (v === 'ch' && m && !(PICK && PICK.b === +m[1])) return setPick(mostActive(+m[1])); }   // round 10b: never open on an empty / dead channel
   else if (k === 'htab') U.htab = v;
   refresh();
-});
+}
 // round 10b: the channel to show when nobody picked one: the largest |depthwise output| this call (never a ReLU-dead, all-zero channel)
 function mostActive(b) { const h = depthwise(b, idx); let best = { s: 0, c: 0, v: -1 };
   for (let s = 0; s < (ONE ? 1 : 2); s++) for (let c = 0; c < 32; c++) if (Math.abs(h[s][c]) > best.v) best = { s, c, v: Math.abs(h[s][c]) };
