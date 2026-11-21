@@ -20,9 +20,12 @@
   const vp = () => window.K8Viewport ? window.K8Viewport() : { left: 0, top: 0, width: innerWidth, height: innerHeight };
 
   // ---------------------------------------------------------------- which layout
+  // 21 Nov 2026: the scroll story (html.story, set by index.html's boot script) has none of the viewer's panels, so nothing here applies
+  // to it; viewer.mjs enter() removes the class and calls apply() when the reader opens the 3D model from the story.
+  const story = () => html.classList.contains('story');
   function formNow() {
     if (/[?&]nophone=1/.test(location.search)) return null;   // tools/make_pics.mjs: its 800×500 pictures are small desktop views, not the phone layout
-    if (window.K8_EMBED) return null;
+    if (window.K8_EMBED || story()) return null;
     const { width: w, height: h } = vp();
     if (h <= 500 && w > h) return 'column';             // a phone on its side
     if (w <= 900) return w > h ? 'column' : 'sheet';    // a small window or tablet: by its shape
@@ -32,7 +35,7 @@
     const f = formNow(), was = html.dataset.form || null, br = $('brand');
     if (br) html.style.setProperty('--brand-w', Math.ceil([...br.children].reduce((m, c) => Math.max(m, c.getBoundingClientRect().right), 0)) + 'px');   // where the brand line ends: the Data side's stage strip starts after it when the phone is on its side
     if (f) html.dataset.form = f; else delete html.dataset.form;
-    html.classList.toggle('touch', coarse.matches);
+    html.classList.toggle('touch', coarse.matches && !story());
     if (f !== was) { placeData(); syncTabs(); legendSoon(); }
     return f !== was;
   }
@@ -195,5 +198,5 @@
   // A bar that grows or shrinks (the caption line, the wrapped rows) moves the sheet: re-centre the scene.
   if (bar && window.ResizeObserver) { let h = 0; new ResizeObserver(() => { const n = bar.offsetHeight; if (n !== h) { h = n; if (form()) relayout(); } }).observe(bar); }
 
-  window.K8Phone = { form, free, offset, distK, tip, dataStage, setSheet, setMin, sheet: () => sheet, isPhone: !!BOOT.phone };
+  window.K8Phone = { apply, form, free, offset, distK, tip, dataStage, setSheet, setMin, sheet: () => sheet, isPhone: !!BOOT.phone };
 })();

@@ -2101,6 +2101,7 @@ function enter() {
   scene.background = new THREE.Color('#000'); renderer.setClearColor(0x000000, 1); scene.fog.color.set('#000'); floor.layers.set(0);
   placeDom();                                        // canvas → #scene, labels → home; tab stop, pointer input and orbiting on again
   document.documentElement.classList.remove('story');
+  if (window.K8Phone) window.K8Phone.apply();        // the phone layout was off on the story page: phone.js picks the form for the viewer now
   window.scrollTo({ left: 0, top: 0, behavior: 'instant' });   // the story's scroll position means nothing to a page that cannot scroll
   tierHold = performance.now() + 2000;               // the frames right after the switch are slow once (resize); the auto tier ignores them
   const p0 = camera.position.clone(), t0 = controls.target.clone();
