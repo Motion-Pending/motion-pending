@@ -36,7 +36,7 @@
     if (br) html.style.setProperty('--brand-w', Math.ceil([...br.children].reduce((m, c) => Math.max(m, c.getBoundingClientRect().right), 0)) + 'px');   // where the brand line ends: the Data side's stage strip starts after it when the phone is on its side
     if (f) html.dataset.form = f; else delete html.dataset.form;
     html.classList.toggle('touch', coarse.matches && !story());
-    if (f !== was) { placeData(); syncTabs(); legendSoon(); }
+    if (f !== was) { placeData(); placeTools(); syncTabs(); legendSoon(); }
     return f !== was;
   }
   const form = () => window.K8_EMBED ? null : html.dataset.form || null;
@@ -116,7 +116,7 @@
     if (el && card && card.contains(el)) setSheet('card');
     else if (el && side && side.contains(el)) setSheet(el.closest('#userbox') ? 'user' : 'step');
     if (el) {                                             // bring it into view inside its own scrolling panel (never scrolls the page)
-      const sc = el.closest('#card .bd') || el.closest('#side');
+      const sc = el.closest('#card') || el.closest('#side');
       if (sc) { const er = el.getBoundingClientRect(), sr = sc.getBoundingClientRect(); if (er.top < sr.top || er.bottom > sr.bottom) sc.scrollTop += er.top - sr.top - (sr.height - er.height) / 2; }
     }
     box.classList.toggle('ptop', top);
@@ -146,8 +146,27 @@
     if (cur && flow) flow.scrollLeft = cur.parentElement.offsetLeft - flow.offsetLeft - (flow.clientWidth - cur.offsetWidth) / 2;
   }
 
-  // ---------------------------------------------------------------- View options: touch help, and what each icon button does
+  // ---------------------------------------------------------------- upright phone: a one-row bar
+  // 21 Nov 2026: in form "sheet" the bar keeps Back · step · Next · Play · ⋯ (and One call on a block step); the time slider, Tour and
+  // Whole model move to the top of the ⋯ menu, so the bar is one row and the scene gets its height back. Any other form puts them back.
   const menu = $('menu'), keys = $('keysHelp');
+  const MOVED = ['guideBtn', 'all', 'scrub', 'readout'].map($).filter(Boolean), HOME = new Map(MOVED.map(el => [el, [el.parentElement, el.nextSibling]]));
+  let tools = null;
+  function placeTools() {
+    if (!menu || !MOVED.length) return;
+    if (html.dataset.form === 'sheet') {
+      if (!tools) {
+        tools = document.createElement('div'); tools.id = 'phoneTools';
+        tools.innerHTML = '<div class="pt-row"></div><label class="pt-time"><span>Time</span></label>';
+        menu.querySelector('.mh').after(tools);
+        tools.addEventListener('click', e => { if (e.target.closest('#guideBtn, #all') && menu.classList.contains('show')) $('more').click(); });   // the tour or the whole model takes the screen: the menu steps aside
+      }
+      const row = tools.querySelector('.pt-row'), time = tools.querySelector('.pt-time');
+      for (const el of MOVED) (el.tagName === 'BUTTON' ? row : time).appendChild(el);
+    } else for (const el of MOVED) { const [par, next] = HOME.get(el); if (el.parentElement !== par) par.insertBefore(el, next && next.parentElement === par ? next : null); }
+  }
+
+  // ---------------------------------------------------------------- View options: touch help, and what each icon button does
   if (menu && keys) {
     const d = document.createElement('details'); d.className = 'hint'; d.id = 'touchHelp'; d.open = true;
     d.innerHTML = '<summary>Touch</summary><dl>' +
@@ -188,6 +207,7 @@
   }
   let legendT = 0; const legendSoon = () => { clearTimeout(legendT); legendT = setTimeout(legend, 0); };
   if (card) new MutationObserver(legendSoon).observe(card, { childList: true });
+  if (card) new MutationObserver(() => { if (form()) card.scrollTop = 0; }).observe(card, { childList: true });   // phone.css: the whole card scrolls, level switch included; a new card starts at its top
   if (all) new MutationObserver(legendSoon).observe(all, { attributes: true, attributeFilter: ['aria-pressed'] });
   addEventListener('load', legendSoon);
 
