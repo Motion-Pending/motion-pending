@@ -25,7 +25,9 @@ Then open <http://127.0.0.1:8791/tactical/index.html>. (`serve.py` turns caching
 - **The 3D model view**: `tactical/index.html?explore=1` (the model, layer by layer).
 - **The Data side** (the data pipeline, nine stages as a funnel: `dataview.js`, `dataview.css`, `tactical/data/pipeline/`) is
   switched off for now but kept in the repo. To turn it back on, set `DATA_SIDE = true` in `tactical/side.js` and restore
-  the two links marked `DATA SIDE OFF` in `tactical/index.html`. It then opens at `?explore=1&side=data`.
+  its two links in `tactical/index.html` (the "Step through all nine pipeline stages" link in the Data section and the
+  third row of the Explore list); both are in `git show 831254c:visualization/tactical/index.html`, marked `DATA SIDE OFF`.
+  It then opens at `?explore=1&side=data`.
 
 ## Folders
 
