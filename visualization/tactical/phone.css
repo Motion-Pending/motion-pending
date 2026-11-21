@@ -111,6 +111,11 @@ html[data-form] body:not(.lite) #menu { left:calc(8px + var(--safe-l)); right:ca
 html[data-form] #keysHelp { display:none; }
 html[data-form] #guideHud { top:calc(50px + var(--safe-t)); left:auto; right:calc(8px + var(--safe-r)); transform:none; gap:6px; padding:4px 6px 6px 10px; max-width:calc(100vw - 16px); }
 html[data-form] #guideHud .gt, html[data-form] #guideHud .gsl { display:none; }
+/* 21 Nov 2026: the progress line gives way (ellipsis), the buttons never do, so Exit stays on screen when "· paused" and Resume appear */
+html[data-form] #guideHud .gp { flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+html[data-form] #guideHud button { flex:none; padding:0 10px; }
+html[data-form="sheet"] #guideHud { top:calc(4px + var(--safe-t)); left:calc(86px + var(--safe-l)); right:calc(8px + var(--safe-r)); max-width:none; }
+html[data-form="sheet"] body:has(#guideHud:not([hidden])) #brand > :not(#toStory) { visibility:hidden; }   /* upright: the tour line takes the brand row, next to ← Story */
 /* A tip is docked, not floating: over the sheet when it points into the scene (so the scene stays whole), or along the top of the
    scene when it points at something inside the sheet or the bar. tour.js reads the box's real place for its pointer line. */
 html[data-form] #tour { left:var(--sh-l) !important; top:auto !important; bottom:var(--sh-b); width:var(--sh-w); max-width:none !important; height:calc(var(--sh-h) + 46px); max-height:none;
