@@ -240,3 +240,10 @@ html[data-form="column"] #dvFlow button { display:flex; flex-direction:row; flex
   html[data-form="sheet"] #dvBandKey { display:none; }
   html[data-form="sheet"] #dvStage { gap:4px; padding:5px 8px 6px; }
 }
+
+/* the wear view on touch: zoom and play buttons in its HUD (viewer.mjs wearTouchUI), beside Take it off */
+#wearTouch[hidden] { display:none; }
+html.touch #wearHud p:has(#wearExit) { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+html.touch #wearTouch { display:inline-flex; gap:6px; margin-right:auto; }
+html.touch #wearTouch button { width:44px; min-height:44px; padding:0; justify-content:center; }
+html.touch #wearExit { min-height:44px; }

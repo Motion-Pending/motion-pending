@@ -975,6 +975,7 @@ function cardOffset(on) { requestRender();
   const { width: VW, height: VH } = viewport();
   // viz-phone: on a small screen the panels are not beside the scene but under it (or left of it), so the optical centre moves to the middle of the free rectangle, card open or not
   const po = window.K8Phone && window.K8Phone.offset(); if (po) return camera.setViewOffset(VW, VH, po.x, po.y, VW, VH);
+  if (window.K8Phone && window.K8Phone.form()) return camera.clearViewOffset();   // a phone with no free rectangle (the wear view): centred, never the desktop card's shift
   on = on &&!card.classList.contains('min') && !card.classList.contains('cmp'); if (on) camera.setViewOffset(VW, VH, -200, 0, VW, VH); else camera.clearViewOffset(); }
 let LEVEL = 'standard';   // beginner | standard | expert
 try { const saved = localStorage.getItem('k8level'); if (['beginner', 'standard', 'expert'].includes(saved)) LEVEL = saved; } catch { /* round 9 (compat 2): keep the in-memory default */ }
@@ -1543,7 +1544,7 @@ controls.addEventListener('change', requestRender);                         // o
 const scrub = document.getElementById('scrub'), playB = document.getElementById('play'), speed = document.getElementById('speed');
 const tC = document.getElementById('tCompress'), tTree = document.getElementById('tTree'), menu = document.getElementById('menu'), more = document.getElementById('more');
 let playing = !reduce && !EMB(), acc = 0;          // embed: playback starts only when the story asks (K8Viewer.setPlaying)
-const setPlay = v => { playing = v; playB.innerHTML = svgI(v ? 'pause' : 'play'); playB.setAttribute('aria-label', v ? 'Pause' : 'Play'); };   // round 8: icon   // round 6: the name says what a press does
+const setPlay = v => { playing = v; for (const b of [playB, document.getElementById('wearPlay')]) if (b) { b.innerHTML = svgI(v ? 'pause' : 'play'); b.setAttribute('aria-label', v ? 'Pause' : 'Play'); } };   // round 8: icon   // round 6: the name says what a press does
 const setIdx = i => { if (!D) return; idx = Math.max(D.firstShown, Math.min(D.frames.length - 1, i)); update(); };
 // Playback speed in samples per second: the Speed slider, or while embedded the story's own rate (SPEC C5a). Embedded it plays at real
 // time, 100 samples a second (the recording's rate). embedRateWatch() times the gaps between drawn frames while it plays; if the median
@@ -1808,6 +1809,7 @@ function setWear(on) {
   if (on) { camTween = null; gazeFollow = false; controls.enabled = false; camera.fov = WEAR.fov; cardOffset(false); setPlay(!reduce); WEAR.off.set(0, 0, 0); }
   else { camera.fov = 40; controls.enabled = true; for (const m of [...WEAR_DOTS(), ...WEAR_CONES()]) if (m.userData.s0 !== undefined) m.scale.setScalar(m.userData.s0); cardOffset(card.classList.contains('show')); gazeFollow = true; }
   camera.updateProjectionMatrix(); if (D) update(); requestRender();
+  if (on) wearTouchUI();
   TOUR.close(); if (on) TOUR.enter('wear');          // round 15: the outside-view gaze tips go; beginner level gets the wear tips once per session
 }
 function wearStep(dt) {
@@ -1829,11 +1831,32 @@ function wearStep(dt) {
     WEAR.key = key; const X = document.getElementById('wearX'); X.style.left = `${x}px`; X.style.top = `${y}px`;
     document.getElementById('wearRings').innerHTML = WEAR_RINGS.map(d => { const r = f * Math.tan(d * Math.PI / 180);
       return r > Math.hypot(VW, VH) ? '' : `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}"/><text x="${(x + r * .707 + 3).toFixed(1)}" y="${(y - r * .707 - 3).toFixed(1)}">${d}°</text>`; }).join('');
-    document.getElementById('wearFov').innerHTML = `field of view <b>${camera.fov.toFixed(0)}°</b> (scroll to zoom, 8–90°)`;
+    document.getElementById('wearFov').innerHTML = `field of view <b>${camera.fov.toFixed(0)}°</b> (${TOUCH() ? '− / + ' : 'scroll '}to zoom, 8–90°)`;
   }
 }
-renderer.domElement.addEventListener('wheel', e => { if (!WEAR.on) return; e.preventDefault();
-  WEAR.fov = Math.max(8, Math.min(90, WEAR.fov * Math.exp(e.deltaY * .0015))); camera.fov = WEAR.fov; camera.updateProjectionMatrix(); requestRender(); }, { passive: false });
+const wearZoom = k => { WEAR.fov = Math.max(8, Math.min(90, WEAR.fov * k)); camera.fov = WEAR.fov; camera.updateProjectionMatrix(); requestRender(); };
+renderer.domElement.addEventListener('wheel', e => { if (!WEAR.on) return; e.preventDefault(); wearZoom(Math.exp(e.deltaY * .0015)); }, { passive: false });
+// 21 Nov 2026: a finger has no wheel and no Esc, and the bar is hidden while wearing: on touch the HUD gets its own zoom and play buttons,
+// and its words say − / + instead of scroll and drop "(Esc)". Built on the first wear, checked again each time (html.touch can change).
+const TOUCH = () => document.documentElement.classList.contains('touch');
+const WEAR_LEGEND = document.querySelector('#wearHud .m:not([id])'), WEAR_LEGEND0 = WEAR_LEGEND ? WEAR_LEGEND.innerHTML : '';
+function wearTouchUI() {
+  const t = TOUCH(), ex = document.getElementById('wearExit'); let row = document.getElementById('wearTouch');
+  if (t && !row) {
+    row = document.createElement('span'); row.id = 'wearTouch';
+    row.innerHTML = `<button type="button" id="wearOut" class="b-icon" aria-label="Zoom out (wider view)">${svgI('minus')}</button>`
+      + '<button type="button" id="wearIn" class="b-icon" aria-label="Zoom in (narrower view)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></button>'
+      + `<button type="button" id="wearPlay" class="b-icon"></button>`;
+    ex.parentElement.prepend(row);
+    row.querySelector('#wearOut').onclick = () => wearZoom(1.25); row.querySelector('#wearIn').onclick = () => wearZoom(1 / 1.25);
+    row.querySelector('#wearPlay').onclick = () => { setPlay(!playing); requestRender(); };
+  }
+  if (row) row.hidden = !t;
+  setPlay(playing);
+  ex.textContent = t ? 'Take it off' : 'Take it off (Esc)';
+  if (WEAR_LEGEND) WEAR_LEGEND.innerHTML = t ? WEAR_LEGEND0.replace('scroll to zoom', '− / + to zoom') : WEAR_LEGEND0;
+  WEAR.key = '';                                    // the field-of-view line is rewritten on the next frame
+}
 renderer.domElement.addEventListener('pointerdown', e => { if (WEAR.on) WEAR.drag = { x: e.clientX, y: e.clientY, ox: WEAR.off.x, oy: WEAR.off.y }; });
 addEventListener('pointermove', e => { if (!WEAR.on || !WEAR.drag) return; const d = WEAR.drag;
   WEAR.off.y = Math.max(-.45, Math.min(.45, d.oy - (e.clientX - d.x) * .004)); WEAR.off.x = Math.max(-.35, Math.min(.35, d.ox - (e.clientY - d.y) * .004)); requestRender(); });
