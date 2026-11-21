@@ -103,6 +103,26 @@ html.tc-open .st-top { transform:translateY(-100%); }   /* the bar slides up out
   .tc-copy, .tc-launch { position:static; max-width:none; }
   .tc-lead { font-size:20px; }
 }
+@media (max-width: 768px) and (orientation: portrait) and (max-height: 700px) {
+  .tc { min-height:0; }
+  html:not(.tc-open) .tc-frame { height:50%; }
+  .tc-ui { gap:14px; padding-bottom:16px; }
+  .tc-lead { font-size:18px; }
+  .tc-sum { margin-top:10px; font-size:13.5px; }
+  .tc-launch { padding-top:15px; padding-bottom:15px; }
+}
+@media (orientation: landscape) and (max-height: 500px) {
+  .tc { height:calc(100svh - var(--bar)); min-height:0; }
+  html.story #story .tc { scroll-margin-top:var(--bar); }
+  #story .tc-type { top:24%; font-size:min(15vh, 9vw); }
+  .tc-l { top:14px; font-size:12px; } .tc-r { display:none; }
+  .tc-copy { top:auto; bottom:18px; right:auto; max-width:min(360px, 40vw); }
+  .tc-lead { font-size:18px; }
+  .tc-sum { display:none; }
+  .tc-launch { left:auto; right:clamp(20px, 4vw, 56px); bottom:18px; padding:14px 26px; }
+}
+.st-top nav a.st-cta { white-space:nowrap; }
+@media (max-width: 380px) { .st-top nav a.st-cta { padding-left:10px; padding-right:10px; } }
 
 /* ---------------------------------------------------------------- 4. "Explore it yourself" (#s-explore3d, above the team, 16 Nov)
    Three numbered rows, Anduril-style: hairlines, big type, a tag on the right, an arrow that turns acid and slides on hover. */
