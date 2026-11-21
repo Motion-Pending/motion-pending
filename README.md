@@ -9,6 +9,9 @@ Jing Hua Ye, Department of Computer Science, Munster Technological University, C
 
 **Result:** joint first place (Gold) in the 9th ABC Challenge.
 
+**Interactive site:** <https://nicgroenewald.github.io/abc-challenge/>. It covers the challenge, the data, a 3D view
+of the model running, and a dive from the headset down to the chip.
+
 ## The task
 
 - **In:** up to 4 s of head orientation: 400 unit quaternions (w, x, y, z) at 100 Hz.
