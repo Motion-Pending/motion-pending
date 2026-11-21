@@ -5,8 +5,9 @@ The team's interactive site for the final model (final_k8_combined_v10_s42, trai
 
 ## Run it
 
-It is not published online at the moment. `.github/workflows/pages.yml` can publish this folder to GitHub Pages; it is
-disabled for now.
+**Live:** <https://motion-pending.github.io/>. The site is published by the
+[`Motion-Pending/motion-pending.github.io`](https://github.com/Motion-Pending/motion-pending.github.io) repo, whose workflow
+copies this folder from `main` here (run it by hand from its Actions tab, and it also runs once a day).
 
 To run it locally, it must be served over http (the pages load modules and data files), from this folder:
 
