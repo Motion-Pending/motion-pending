@@ -22,8 +22,10 @@ Then open <http://127.0.0.1:8791/tactical/index.html>. (`serve.py` turns caching
 - **TAKE CONTROL** (`tactical/journey/`): the interactive dive. VR headset → circuit board (a replica of the Meta Quest 3 main
   board, both sides, from iFixit's chip ID) → the XR2 Gen 2 die with the 10 ms data path → the model (A etched / B console, with a
   scrub bar) → SEE IT PREDICT: the 200 ms-ahead ghost and the live error.
-- **The 3D spaces**: `tactical/index.html?explore=1` (the model, layer by layer) and `?explore=1&side=data` (the data pipeline,
-  nine stages as a funnel).
+- **The 3D model view**: `tactical/index.html?explore=1` (the model, layer by layer).
+- **The Data side** (the data pipeline, nine stages as a funnel: `dataview.js`, `dataview.css`, `tactical/data/pipeline/`) is
+  switched off for now but kept in the repo. To turn it back on, set `DATA_SIDE = true` in `tactical/side.js` and restore
+  the two links marked `DATA SIDE OFF` in `tactical/index.html`. It then opens at `?explore=1&side=data`.
 
 ## Folders
 

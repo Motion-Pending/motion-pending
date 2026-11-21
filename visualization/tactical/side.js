@@ -14,6 +14,10 @@
   // 13 Nov 2026: the data is the story's own copy (data/pipeline/, final dataset moredata_final.h5, made by tools/make_data_final.py),
   // not the parent's ../data/pipeline (the 1,600-player version, which other pages still read).
   const FILES = { css: 'dataview.css?r=fn1', data: 'data/pipeline/examples.js?r=s1', js: 'dataview.js?r=src1' };
+  // 21 Nov 2026 (Nic): the Data side is switched off for now, but kept in the repo. While false there is no Data | Model
+  // switch and ?side=data opens the Model side. To bring it back: set true, and restore the two links marked
+  // "DATA SIDE OFF" in index.html.
+  const DATA_SIDE = false;
   const brand = document.getElementById('brand');
   if (!brand) return;
 
@@ -43,7 +47,7 @@
   tabs.innerHTML =
     '<button type="button" data-side="data" aria-pressed="false">Data</button>' +
     '<button type="button" data-side="model" aria-pressed="true">Model</button>';
-  brand.insertBefore(tabs, brand.querySelector('span'));
+  if (DATA_SIDE) brand.insertBefore(tabs, brand.querySelector('span'));
 
   // The way back to the scroll story, on both sides. A real link to the page without its query (the story). If the reader came
   // here from the story in this tab, going back in history is used instead: the browser then restores where they were reading.
@@ -145,5 +149,5 @@
 
   document.body.dataset.side = 'model';
   window.K8Side = { get: () => side, set };
-  if (new URLSearchParams(location.search).get('side') === 'data') set('data');
+  if (DATA_SIDE && new URLSearchParams(location.search).get('side') === 'data') set('data');
 })();

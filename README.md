@@ -87,8 +87,8 @@ python visualization/tactical/proto/serve.py
 BOXRR-23's data use agreement doesn't allow its recordings to be published, so the site replays none of them:
 - **The hero clip and the explorer's first player** are one Beat Saber session from QuestSet (see [Credits](#credits)),
   a public dataset the model never trained on.
-- **The Data side's example recordings and the explorer's four faster players** are synthetic head motion, made for
-  the site. They are not recordings of anyone.
+- **The explorer's four faster players** are synthetic head motion, made for the site. They are not recordings of
+  anyone. (So are the example recordings of the Data side, which is switched off for now.)
 - **The numbers about BOXRR-23** (the pipeline's counts and rates, the per-recording speed scatter and the results)
   are the team's real figures.
 
