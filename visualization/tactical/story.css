@@ -68,7 +68,19 @@ html.story, html.story body { background:#000; }
 .st-top nav a:hover { color:var(--ink); }
 .st-top nav a.st-cta { color:var(--go-ink); background:var(--go); border:1px solid #24523a; border-radius:6px; padding:8px 14px; transition:background .15s; }
 .st-top nav a.st-cta:hover { background:var(--go-hi); color:#fff; }
-@media (max-width: 760px) { .st-top nav a:not(.st-cta) { display:none; } }
+/* the chapter links sit in .st-chap, which is display:contents here, so on a wide bar they are plain items of the nav. Under 760 px
+   they do not fit (21 Nov 2026): they fold into a menu under the .st-menu button (story.js), one 48 px row per chapter. */
+.st-chap { display:contents; }
+.st-menu { display:none; }
+@media (max-width: 760px) {
+  .st-top .st-menu { display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; min-height:0; padding:0; margin-right:-4px;
+    color:var(--quiet); background:none; border:0; border-radius:6px; cursor:pointer; }
+  .st-top .st-menu[aria-expanded="true"] { color:var(--ink); background:rgba(255,255,255,.07); }
+  .st-chap { display:none; position:absolute; top:100%; right:clamp(20px, 4vw, 48px); min-width:200px; flex-direction:column; padding:6px 0;
+    background:var(--bg); border:1px solid var(--line); border-top:0; border-radius:0 0 8px 8px; }
+  .st-top.is-chap .st-chap { display:flex; }
+  .st-top nav .st-chap a { display:flex; align-items:center; min-height:48px; padding:0 20px; font-size:15px; color:var(--body); }
+}
 
 /* ---------------------------------------------------------------- 4. sections and type */
 .st-sec { max-width:var(--col); margin:0 auto; padding:var(--gap) clamp(20px, 4vw, 48px); }
