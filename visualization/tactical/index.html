@@ -462,7 +462,7 @@ if (window.K8_BOOT.lite || window.K8_STORY) {
           <h2>394,171 recordings.</h2>
           <p>The training data is BOXRR-23, a public collection of people playing VR games. For one batch of our downloads we kept the full log: 394,171 recordings from 9,217 players. Nobody cleaned it: headsets write at different speeds, clocks stick, and in most recordings the head hardly moves.</p>
           <p class="st-note">The dots show proportions: one dot stands for about 394 recordings, and which dots stay lit is not which recordings passed.</p>
-          <p class="st-note">The counts in this section are real, from our own download log of BOXRR-23 (Nair et al., CC BY-NC-SA 4.0). No recording from it is shown on this site: its data use agreement does not allow passing them on, so the recordings drawn on the Data side are synthetic.</p>
+          <p class="st-note">The counts in this section are real, from our own download log of BOXRR-23 (Nair et al., CC BY-NC-SA 4.0). No recording from it is shown on this site: its data use agreement does not allow passing them on.</p>
         </div>
         <figure class="dk-fig"><div class="dk-panel pn-dots">
           <span class="pn-tag">raw BOXRR-23 · one dot ≈ 394 recordings</span>
@@ -502,7 +502,7 @@ if (window.K8_BOOT.lite || window.K8_STORY) {
           <p class="st-kicker">Data · the split</p>
           <h2>Split by player.</h2>
           <p>The model is judged on strangers, so every player goes into one group only. Together with the players from our other batches, which went through the same checks, the final dataset holds 7,078 players and 204,603,125 training windows.</p>
-          <p><a href="?explore=1&amp;side=data">Step through all nine pipeline stages</a></p>
+          <!-- DATA SIDE OFF (21 Nov 2026, side.js DATA_SIDE): <p><a href="?explore=1&amp;side=data">Step through all nine pipeline stages</a></p> -->
         </div>
         <figure class="dk-fig"><div class="dk-panel pn-split">
           <span class="pn-tag">7,078 players · no one in two groups</span>
@@ -707,7 +707,7 @@ if (window.K8_BOOT.lite || window.K8_STORY) {
        Styled in tactical.css section 4. -->
   <section class="st-sec xp" id="s-explore3d" aria-labelledby="xpH">
     <p class="st-kicker">Explore it yourself</p>
-    <h2 id="xpH">Three ways in.</h2>
+    <h2 id="xpH">Two ways in.</h2>
     <ol class="xp-list">
       <li><a class="xp-row" href="#s-model" data-tc-launch>
         <span class="xp-n">01</span><span class="xp-t">Interactive view<small>Go inside the headset, find the chip, watch k8 predict.</small></span>
@@ -715,9 +715,10 @@ if (window.K8_BOOT.lite || window.K8_STORY) {
       <li><a class="xp-row" href="?explore=1">
         <span class="xp-n">02</span><span class="xp-t">The model, in 3D<small>Every layer of k8, live on a recorded player. Build it one part at a time, or take the guided tour.</small></span>
         <span class="xp-tag">3D space · model</span><span class="xp-go" aria-hidden="true">→</span></a></li>
+      <!-- DATA SIDE OFF (21 Nov 2026, side.js DATA_SIDE; the heading above was "Three ways in."):
       <li><a class="xp-row" href="?explore=1&amp;side=data">
         <span class="xp-n">03</span><span class="xp-t">The data pipeline, in 3D<small>Nine stages from 394,171 raw recordings to one model input.</small></span>
-        <span class="xp-tag">3D space · data</span><span class="xp-go" aria-hidden="true">→</span></a></li>
+        <span class="xp-tag">3D space · data</span><span class="xp-go" aria-hidden="true">→</span></a></li> -->
     </ol>
   </section>
 
@@ -768,7 +769,7 @@ if (window.K8_BOOT.lite || window.K8_STORY) {
       <dt>Data</dt><dd>The model was trained on <a href="https://rdi.berkeley.edu/metaverse/boxrr-23/">BOXRR-23</a>: V. Nair, W. Guo, R. Wang, J. F. O'Brien, L. Rosenberg and D. Song, "Berkeley Open Extended Reality Recordings 2023 (BOXRR-23)", <a href="https://doi.org/10.25350/B5NP4V">doi:10.25350/B5NP4V</a>, licensed under <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a> with an ethical data use agreement. The trained model and results are shared under the same licence.</dd>
       <!-- 20 Nov 2026: CC BY 4.0 needs title, author, source, licence and a note of changes (tools/make_questset_data.py) -->
       <!-- 20 Nov 2026: tools/make_synthetic_data.py, tools/synthetic_motion.py -->
-      <dt>Synthetic data</dt><dd>The recordings drawn on the Data side and the model's faster replay players are synthetic head motion made for this page, because BOXRR-23's data use agreement does not allow passing its recordings on. They are not recordings of anyone. The counts about BOXRR-23 are real.</dd>
+      <dt>Synthetic data</dt><dd>The 3D model view's four faster replay players are synthetic head motion made for this page, because BOXRR-23's data use agreement does not allow passing its recordings on. They are not recordings of anyone. The counts about BOXRR-23 are real.</dd>
       <dt>Replay data</dt><dd>The hero clip and the model's main replay use head motion from <a href="https://researchdata.cab.unipd.it/1239/">QuestSet</a> (Baldoni et al., 2024), licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Modified: head rotation only, converted to the model's frame and resampled to 100&nbsp;Hz. The model was not trained on it.</dd>
       <!-- Team: the paper's author block (main.tex \author, \thanks), names only; "supervisors" from UPDATE_BRIEF.md decision 1 -->
       <dt>Team</dt><dd>Motion Pending: Jacob Dorrill, Nicholas Groenewald, Ray Crowley and Duncan O'Regan. Supervisors: Ruairi O'Reilly and JingHua Ye. Computer Science Department, Munster Technological University, Cork, Republic of Ireland. Jacob and Nicholas worked on the model side (model architecture, compression and latency); Ray and Duncan on the data side (data preparation and the pipeline).</dd>
@@ -865,7 +866,7 @@ if (window.K8_BOOT.lite || window.K8_STORY) {
 <div id="tip" role="tooltip" hidden></div>
 <div id="srLive" class="sr" aria-live="polite"></div>
 <!-- viz-data: Data | Model switch. side.js adds the two tabs to #brand and the #dataView container, sets body[data-side] and fires "k8:side"; the Data side itself loads on first use. -->
-<script src="side.js?r=src1"></script>
+<script src="side.js?r=off1"></script>
 <!-- viz-phone: sets html[data-form] and html.touch, builds the sheet's tab strip, and gives the 3D module window.K8Phone (free rectangle, view offset) -->
 <script src="phone.js?r=p1"></script>
 
