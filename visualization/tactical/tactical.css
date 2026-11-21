@@ -30,7 +30,7 @@ html.st-motion .pn-answer { background:rgba(223,241,64,.03); }
 .st-top { background:rgba(1,1,1,.72); }
 .st-top nav a.st-cta { border-color:var(--go); }
 .st-top nav a.st-cta:hover { color:var(--go-ink); }
-/* 21 Nov 2026: the GitHub link beside the button, to the team repo (Motion-Pending/abc-challenge). Icon only, so it carries an
+/* 21 Nov 2026: the GitHub link beside the button, to the team repo (Motion-Pending/motion-pending.github.io). Icon only, so it carries an
    aria-label; a 40 px square to hit, shown at every width (story.css hides the other nav links on a phone). */
 .st-top nav a.st-gh { display:inline-flex; align-items:center; justify-content:center; width:40px; height:40px; padding:0; margin:0 -6px;
   color:var(--quiet); border-radius:6px; }
