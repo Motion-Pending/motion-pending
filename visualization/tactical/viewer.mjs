@@ -93,7 +93,7 @@ let EMBT = null;                                    // ticket 06b: { at: ms, fn 
 // K8Viewer.ready: resolves once the first trace has been drawn. The extra catch() only marks the rejection as seen (no "uncaught" noise);
 // anyone awaiting READY still gets it.
 let readyOk, readyBad, readyDone = false; const READY = new Promise((ok, bad) => { readyOk = ok; readyBad = bad; }); READY.catch(() => {});
-try { if (window.K8_NOSTART) throw new Error(window.K8_NOSTART); renderer = new THREE.WebGLRenderer({ antialias: BOOT.tier === 'full', ...(EMB() && EMB().clear && { alpha: true }) }); }   // P1: smoothing of edges (antialiasing) only on the full tier; it is fixed when the 3D context is made
+try { if (window.K8_NOSTART) throw new Error(window.K8_NOSTART); renderer = new THREE.WebGLRenderer({ antialias: BOOT.tier === 'full' || !!BOOT.phone, ...(EMB() && EMB().clear && { alpha: true }) }); }   // P1: smoothing of edges (antialiasing) only on the full tier and on a phone; it is fixed when the 3D context is made
 catch (err) { if (EMB()) { readyBad(err); window.K8Viewer = { ready: READY }; }   // embedded: no picture version here; the story keeps its own picture
   else if (BOOT.startLite) BOOT.startLite('WebGL2 could not start on this computer.'); throw err; }   // P1: no 3D → the picture version (lite.js) takes over; this module stops here
 renderer.localClippingEnabled = true;   // round 5: guide block shots clip the walls to their live part
@@ -555,29 +555,50 @@ function drawInset() {
   if (html) html = html.replace(/<svg width="([\d.]+)" height="([\d.]+)"(?![^>]*viewBox)/g, '<svg width="$1" height="$2" viewBox="0 0 $1 $2"')   // round 10: scale to the panel
     .replace(/font-size="(8|8\.5|9)"/g, 'font-size="9.5"');   // ≥ 12 px once scaled to the 410 px panel
   if (html) html = html.replace(/<rect data-grid="/g, '<rect tabindex="0" role="button" aria-label="heatmap: arrow keys move the selected cell" data-grid="').replace(/ data-hx="/g, ' tabindex="0" aria-label="chart: ← → pick a step" data-hx="');
+  if (html) html = PW(html);
   insetEl.classList.toggle('show', !!html); if (html && html !== insetHTML) { insetHTML = html; morphHTML(insetEl, html); }   // round 6: patch, no rebuild
   if (glowSel && glowSel.startsWith('#inset')) { const el = document.querySelector(glowSel); if (el) { el.classList.add('gHL'); glowDom = el; } }   // re-rendered: keep the tip's outline
 }
 const refresh = () => { if (D) update(); else drawInset(); applyHL(); };
 // hover: an inset chart's [data-hx] overlay maps the pointer to a lag (input) or a forecast step k (trajectory, forecast)
+const PW = s => window.K8Phone ? window.K8Phone.words(s) : s;   // a phone's wording (phone.js), the same text elsewhere
 const clamp01 = v => Math.max(0, Math.min(1, v));
 const hxMove = e => {
   const t = e.target.closest && e.target.closest('[data-hx]'); let v = null;
   if (t) { const r = t.getBoundingClientRect(), n = +t.dataset.n, i = Math.round(clamp01((e.clientX - r.left) / r.width) * (n - 1)); v = t.dataset.rev === '1' ? n - 1 - i : i + (+t.dataset.off || 0); }
   if (v !== U.hov) { U.hov = v; drawInset(); applyHL(); poseHS0(); }
 };
-insetEl.addEventListener('pointermove', hxMove);
 // viz-phone: a finger has no hover. A tap or a slide on a chart picks the step and the pick stays after the finger lifts; a tap anywhere else in the figure clears it.
-insetEl.addEventListener('pointerdown', e => { if (e.pointerType !== 'mouse') hxMove(e); });
+// 21 Nov 2026: a finger also scrolls the panel, so on touch nothing is picked until the gesture shows what it is: a tap (lifted within 8 px)
+// acts at once on the place first touched; a sideways slide on a chart picks steps as it goes; anything else is a scroll, which the browser
+// ends with pointercancel. A mouse acts on pointerdown, as before.
+let TT = null;                                     // the finger on the inset: { id, x, y, t (target), r (its heatmap's rect, kept in case a redraw replaces it), slide }
+insetEl.addEventListener('pointermove', e => {
+  if (e.pointerType === 'mouse') return hxMove(e);
+  if (!TT || e.pointerId !== TT.id) return;
+  if (!TT.slide) { const dx = e.clientX - TT.x, dy = e.clientY - TT.y; if (Math.abs(dx) < 8 || Math.abs(dx) < Math.abs(dy)) return; TT.slide = true; }
+  hxMove(e);
+});
 insetEl.addEventListener('pointerleave', e => { if (e.pointerType !== 'mouse') return; if (U.hov !== null) { U.hov = null; drawInset(); applyHL(); poseHS0(); } });
 // clicks: [data-grid] heatmaps map the pointer to (row, col); [data-act] rows, tabs and toggles.
 // pointerdown, not click: while playing, the inset is redrawn ~8×/s, so a click's down and up can land on different (replaced) elements
 insetEl.addEventListener('pointerdown', e => {
   if (e.button !== 0) return;
+  if (e.pointerType === 'mouse') return insetAct(e.target, e.clientX, e.clientY);
   const g = e.target.closest && e.target.closest('[data-grid]');
-  if (g) { const r = g.getBoundingClientRect(), rows = +g.dataset.rows, cols = +g.dataset.cols;
-    return gridPick(g.dataset.grid, Math.min(rows - 1, Math.floor(clamp01((e.clientY - r.top) / r.height) * rows)), Math.min(cols - 1, Math.floor(clamp01((e.clientX - r.left) / r.width) * cols))); }
-  const a = e.target.closest && e.target.closest('[data-act]'); if (!a) return;
+  TT = { id: e.pointerId, x: e.clientX, y: e.clientY, t: e.target, r: g && g.getBoundingClientRect(), slide: false };
+});
+addEventListener('pointerup', e => {
+  const t = TT; if (!t || e.pointerId !== t.id) return; TT = null;
+  if (t.slide || Math.hypot(e.clientX - t.x, e.clientY - t.y) >= 8) return;
+  hxMove({ target: t.t, clientX: t.x }); insetAct(t.t, t.x, t.y, t.r);
+});
+insetEl.addEventListener('pointercancel', e => { if (TT && e.pointerId === TT.id) TT = null; });
+function insetAct(target, x, y, rect) {
+  const g = target.closest && target.closest('[data-grid]');
+  if (g) { const r = rect || g.getBoundingClientRect(), rows = +g.dataset.rows, cols = +g.dataset.cols;
+    return gridPick(g.dataset.grid, Math.min(rows - 1, Math.floor(clamp01((y - r.top) / r.height) * rows)), Math.min(cols - 1, Math.floor(clamp01((x - r.left) / r.width) * cols))); }
+  const a = target.closest && target.closest('[data-act]'); if (!a) return;
   const [k, v] = a.dataset.act.split(':');
   if (k === 'frow') U.fpick = U.fpick === +v ? null : +v;
   else if (k === 'fexp') U.fexp = !U.fexp;
@@ -586,7 +607,7 @@ insetEl.addEventListener('pointerdown', e => {
     if (v === 'ch' && m && !(PICK && PICK.b === +m[1])) return setPick(mostActive(+m[1])); }   // round 10b: never open on an empty / dead channel
   else if (k === 'htab') U.htab = v;
   refresh();
-});
+}
 // round 10b: the channel to show when nobody picked one: the largest |depthwise output| this call (never a ReLU-dead, all-zero channel)
 function mostActive(b) { const h = depthwise(b, idx); let best = { s: 0, c: 0, v: -1 };
   for (let s = 0; s < (ONE ? 1 : 2); s++) for (let c = 0; c < 32; c++) if (Math.abs(h[s][c]) > best.v) best = { s, c, v: Math.abs(h[s][c]) };
@@ -956,6 +977,7 @@ function cardOffset(on) { requestRender();
   const { width: VW, height: VH } = viewport();
   // viz-phone: on a small screen the panels are not beside the scene but under it (or left of it), so the optical centre moves to the middle of the free rectangle, card open or not
   const po = window.K8Phone && window.K8Phone.offset(); if (po) return camera.setViewOffset(VW, VH, po.x, po.y, VW, VH);
+  if (window.K8Phone && window.K8Phone.form()) return camera.clearViewOffset();   // a phone with no free rectangle (the wear view): centred, never the desktop card's shift
   on = on &&!card.classList.contains('min') && !card.classList.contains('cmp'); if (on) camera.setViewOffset(VW, VH, -200, 0, VW, VH); else camera.clearViewOffset(); }
 let LEVEL = 'standard';   // beginner | standard | expert
 try { const saved = localStorage.getItem('k8level'); if (['beginner', 'standard', 'expert'].includes(saved)) LEVEL = saved; } catch { /* round 9 (compat 2): keep the in-memory default */ }
@@ -999,7 +1021,7 @@ function showCard(key) {
     + (key === 'overview' ? '' : more((p.why ? `<p class="why">${p.why}</p>` : '') + (techT ? `<details><summary>Technical details</summary>${techT}</details>` : ''))); }
   const ovMore = key === 'overview' ? moreBox(ovExtra.join('') + (p.why ? `<p class="why">${p.why}</p>` : '') + legend + (D ? `<div class="src">${D.meta.user} · JS recompute vs ONNX, all shown frames: max |Δ| ${maxDiff.toExponential(1)}</div>` : '')) : '';   // one "Read more" on the overview
   const fk = focusKeyIn(card);                     // a11y F11: keep focus on the same control across the rebuild
-  card.innerHTML = cardHTML(lvlBar, title, body + (key === 'overview' ? startG + ovMore : ''));
+  card.innerHTML = cardHTML(lvlBar, title, PW(body + (key === 'overview' ? startG + ovMore : '')));
   card.querySelectorAll('.lvl button').forEach(btn => btn.onclick = () => { LEVEL = btn.dataset.l; try { localStorage.setItem('k8level', LEVEL); } catch { /* not kept */ } showCard(key);
     if (GUIDE.on()) return GUIDE.refresh();       // the walkthrough: the bubble's expert line follows the level
     if (build >= 0 && key === STEPS[build]) { if (LEVEL === 'beginner') TOUR.enter(key); else TOUR.close(); } });
@@ -1128,6 +1150,7 @@ let camTween = null, solo = null, focused = null;
 const reduce = matchMedia('(prefers-reduced-motion: reduce)').matches;
 const HOME = [V(5.5, 8.5, 19), V(4.2, -.3, -3.5)];   // round 14: only the viewing direction (and a fallback); the fit is homeView()
 let atHome = false;                                // true while the camera rests on the fitted whole-model view: a resize re-fits it
+let atStep = false;                                // 21 Nov 2026: the same for a step's own picture (stepView); a phone's rotation or sheet fold re-fits it
 // round 7 (camera flow): the look-at point eases along its path while the camera orbits it on a spherical arc (direction slerped, distance
 // lerped), so a move pans / dollies around what it looks at instead of cutting a straight line through walls. Cubic ease-in-out,
 // 0.8–2 s by distance; a new move during a flight starts from the current pose with an ease-out, so it carries on instead of restarting.
@@ -1135,7 +1158,7 @@ let atHome = false;                                // true while the camera rest
 const _qI = new THREE.Quaternion(), _qT = new THREE.Quaternion(), _od = new THREE.Vector3();
 function fly(p, t, fog) {
   setFog(fog);                                     // viz-look P1: only a step's own picture carries a depth fade; every other flight clears it
-  atHome = false;                                  // any other move leaves the fitted view (goHome sets it again after its own fly)
+  atHome = atStep = false;                         // any other move leaves the fitted view (goHome / showBuild set it again after their own fly)
   if (reduce) { camTween = null; camera.position.copy(p); controls.target.copy(t); requestRender(); return; }
   const p0 = camera.position.clone(), t0 = controls.target.clone(), o0 = p0.clone().sub(t0), o1 = p.clone().sub(t);
   const l0 = Math.max(1e-3, o0.length()), l1 = Math.max(1e-3, o1.length()), n0 = o0.clone().divideScalar(l0), n1 = o1.clone().divideScalar(l1);
@@ -1242,6 +1265,12 @@ function fitView(_box, HOME_DIR, fill = .94) {
   }
   return { p: best.t.clone().addScaledVector(HOME_DIR, best.d), t: best.t, d: best.d, r: best.r, rects };
 }
+// a resize while on a step's own picture: the same picture for the new free space; a flight still under way is re-aimed, not cut
+function refitStep() {
+  const v = stepView(STEPS[build]);
+  if (camTween) fly(v.p, v.t, v.fog); else { camTween = null; camera.position.copy(v.p); controls.target.copy(v.t); setFog(v.fog); }
+  atStep = true; buildView = { p: v.p.clone(), t: v.t.clone(), fog: v.fog };
+}
 function goHome(instant) { const h = homeView(); if (instant) { setFog(null); camTween = null; camera.position.copy(h.p); controls.target.copy(h.t); requestRender(); } else fly(h.p, h.t); atHome = true; }
 function focusGroup(name, keepDir) {
   if (!GROUPS[name]) return; _box.makeEmpty(); boxOf(name);
@@ -1344,7 +1373,7 @@ function showBuild(i) {
   showCard(key); stepUI();                         // viz-look P1: the card and the inset are laid out first, so the camera fit knows the free space
   if (key === 'reach') { GROW = { t0: performance.now() + (reduce ? 0 : 900) }; if (reduce) { GROW = null; paintTree(3); } }
   if (key === 'gaze') { fly(G.position.clone().add(V(1.1, 1.2, 3.4)), G.position.clone()); gazeFollow = true; }   // then the camera eases behind the headset
-  else { const v = stepView(key); fly(v.p, v.t, v.fog); }
+  else { const v = stepView(key); fly(v.p, v.t, v.fog); atStep = true; }
   buildView = camTween ? { p: camTween.p.clone(), t: camTween.t.clone(), fog: FOGV } : { p: camera.position.clone(), t: controls.target.clone(), fog: FOGV };   // the guide's 'build' preset
   applyHL(); poseHS0();
   if (!EMB()) TOUR.enter(key);                     // beginner level: the step's tips start once per step per session (embed: no tour)
@@ -1510,14 +1539,14 @@ renderer.domElement.addEventListener('click', e => {
   const k = Math.floor(id / (hit.object === B.out ? NP : 1));
   U.btab = 'ch'; setPick({ b: +m[1], s: Math.floor(k / 32), c: k % 32, t0: performance.now() });
 });
-controls.addEventListener('start', () => { atHome = false; gazeFollow = false; GUIDE.userCamera(); });   // the walkthrough pauses its auto-play
+controls.addEventListener('start', () => { atHome = atStep = false; gazeFollow = false; GUIDE.userCamera(); });   // the walkthrough pauses its auto-play
 controls.addEventListener('change', requestRender);                         // orbit, zoom, pan, and every frame while damping settles          // the user orbits: stop following the gaze
 
 // ================================================================ controls
 const scrub = document.getElementById('scrub'), playB = document.getElementById('play'), speed = document.getElementById('speed');
 const tC = document.getElementById('tCompress'), tTree = document.getElementById('tTree'), menu = document.getElementById('menu'), more = document.getElementById('more');
 let playing = !reduce && !EMB(), acc = 0;          // embed: playback starts only when the story asks (K8Viewer.setPlaying)
-const setPlay = v => { playing = v; playB.innerHTML = svgI(v ? 'pause' : 'play'); playB.setAttribute('aria-label', v ? 'Pause' : 'Play'); };   // round 8: icon   // round 6: the name says what a press does
+const setPlay = v => { playing = v; for (const b of [playB, document.getElementById('wearPlay')]) if (b) { b.innerHTML = svgI(v ? 'pause' : 'play'); b.setAttribute('aria-label', v ? 'Pause' : 'Play'); } };   // round 8: icon   // round 6: the name says what a press does
 const setIdx = i => { if (!D) return; idx = Math.max(D.firstShown, Math.min(D.frames.length - 1, i)); update(); };
 // Playback speed in samples per second: the Speed slider, or while embedded the story's own rate (SPEC C5a). Embedded it plays at real
 // time, 100 samples a second (the recording's rate). embedRateWatch() times the gaps between drawn frames while it plays; if the median
@@ -1653,7 +1682,9 @@ function cmpStep(dt) {
 
 // ================================================================ round 8: layout glue, tooltip, side panel, keyboard paths
 const sideEl = document.getElementById('side'), barEl = document.getElementById('bar');
-new ResizeObserver(() => { document.documentElement.style.setProperty('--bar-h', `${barEl.offsetHeight}px`); }).observe(barEl);
+// viz-phone: the sheet is placed from --bar-h, so on a phone a new value moves the free space: fit the camera again (the first value lands after showBuild(0))
+new ResizeObserver(() => { const h = `${barEl.offsetHeight}px`, st = document.documentElement.style; if (st.getPropertyValue('--bar-h') === h) return;
+  st.setProperty('--bar-h', h); if (window.K8Phone && window.K8Phone.form()) onResize(); }).observe(barEl);
 function setSide(collapsed) { sideEl.classList.toggle('collapsed', collapsed); const b = document.getElementById('sideCollapse'); b.setAttribute('aria-expanded', !collapsed);
   b.setAttribute('aria-label', collapsed ? 'Expand the side panel' : 'Collapse the side panel'); }
 document.getElementById('sideCollapse').onclick = () => setSide(!sideEl.classList.contains('collapsed'));
@@ -1780,6 +1811,7 @@ function setWear(on) {
   if (on) { camTween = null; gazeFollow = false; controls.enabled = false; camera.fov = WEAR.fov; cardOffset(false); setPlay(!reduce); WEAR.off.set(0, 0, 0); }
   else { camera.fov = 40; controls.enabled = true; for (const m of [...WEAR_DOTS(), ...WEAR_CONES()]) if (m.userData.s0 !== undefined) m.scale.setScalar(m.userData.s0); cardOffset(card.classList.contains('show')); gazeFollow = true; }
   camera.updateProjectionMatrix(); if (D) update(); requestRender();
+  if (on) wearTouchUI();
   TOUR.close(); if (on) TOUR.enter('wear');          // round 15: the outside-view gaze tips go; beginner level gets the wear tips once per session
 }
 function wearStep(dt) {
@@ -1801,11 +1833,32 @@ function wearStep(dt) {
     WEAR.key = key; const X = document.getElementById('wearX'); X.style.left = `${x}px`; X.style.top = `${y}px`;
     document.getElementById('wearRings').innerHTML = WEAR_RINGS.map(d => { const r = f * Math.tan(d * Math.PI / 180);
       return r > Math.hypot(VW, VH) ? '' : `<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="${r.toFixed(1)}"/><text x="${(x + r * .707 + 3).toFixed(1)}" y="${(y - r * .707 - 3).toFixed(1)}">${d}°</text>`; }).join('');
-    document.getElementById('wearFov').innerHTML = `field of view <b>${camera.fov.toFixed(0)}°</b> (scroll to zoom, 8–90°)`;
+    document.getElementById('wearFov').innerHTML = `field of view <b>${camera.fov.toFixed(0)}°</b> (${TOUCH() ? '− / + ' : 'scroll '}to zoom, 8–90°)`;
   }
 }
-renderer.domElement.addEventListener('wheel', e => { if (!WEAR.on) return; e.preventDefault();
-  WEAR.fov = Math.max(8, Math.min(90, WEAR.fov * Math.exp(e.deltaY * .0015))); camera.fov = WEAR.fov; camera.updateProjectionMatrix(); requestRender(); }, { passive: false });
+const wearZoom = k => { WEAR.fov = Math.max(8, Math.min(90, WEAR.fov * k)); camera.fov = WEAR.fov; camera.updateProjectionMatrix(); requestRender(); };
+renderer.domElement.addEventListener('wheel', e => { if (!WEAR.on) return; e.preventDefault(); wearZoom(Math.exp(e.deltaY * .0015)); }, { passive: false });
+// 21 Nov 2026: a finger has no wheel and no Esc, and the bar is hidden while wearing: on touch the HUD gets its own zoom and play buttons,
+// and its words say − / + instead of scroll and drop "(Esc)". Built on the first wear, checked again each time (html.touch can change).
+const TOUCH = () => document.documentElement.classList.contains('touch');
+const WEAR_LEGEND = document.querySelector('#wearHud .m:not([id])'), WEAR_LEGEND0 = WEAR_LEGEND ? WEAR_LEGEND.innerHTML : '';
+function wearTouchUI() {
+  const t = TOUCH(), ex = document.getElementById('wearExit'); let row = document.getElementById('wearTouch');
+  if (t && !row) {
+    row = document.createElement('span'); row.id = 'wearTouch';
+    row.innerHTML = `<button type="button" id="wearOut" class="b-icon" aria-label="Zoom out (wider view)">${svgI('minus')}</button>`
+      + '<button type="button" id="wearIn" class="b-icon" aria-label="Zoom in (narrower view)"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M12 5v14"/></svg></button>'
+      + `<button type="button" id="wearPlay" class="b-icon"></button>`;
+    ex.parentElement.prepend(row);
+    row.querySelector('#wearOut').onclick = () => wearZoom(1.25); row.querySelector('#wearIn').onclick = () => wearZoom(1 / 1.25);
+    row.querySelector('#wearPlay').onclick = () => { setPlay(!playing); requestRender(); };
+  }
+  if (row) row.hidden = !t;
+  setPlay(playing);
+  ex.textContent = t ? 'Take it off' : 'Take it off (Esc)';
+  if (WEAR_LEGEND) WEAR_LEGEND.innerHTML = t ? WEAR_LEGEND0.replace('scroll to zoom', '− / + to zoom') : WEAR_LEGEND0;
+  WEAR.key = '';                                    // the field-of-view line is rewritten on the next frame
+}
 renderer.domElement.addEventListener('pointerdown', e => { if (WEAR.on) WEAR.drag = { x: e.clientX, y: e.clientY, ox: WEAR.off.x, oy: WEAR.off.y }; });
 addEventListener('pointermove', e => { if (!WEAR.on || !WEAR.drag) return; const d = WEAR.drag;
   WEAR.off.y = Math.max(-.45, Math.min(.45, d.oy - (e.clientX - d.x) * .004)); WEAR.off.x = Math.max(-.35, Math.min(.35, d.ox - (e.clientY - d.y) * .004)); requestRender(); });
@@ -1875,7 +1928,9 @@ const TIER_P = { full: { dpr: 1.5, glow: true, haze: true, small: true, sheets: 
                  min: { dpr: .75, glow: false, haze: false, small: false, sheets: true, rate: 4 } };
 // ticket 06b: embedded, the canvas may grow to the whole window on the story's last step, so its drawing buffer uses up to 2 device pixels
 // per CSS pixel (SPEC A6: sharp at the largest size). Not embedded: the tier's own cap, as before.
-const dprCap = () => EMB() ? 2 : TP.dpr;
+// 21 Nov 2026: a phone (BOOT.phone, index.html) starts on light, whose cap of 1 drew its ~0.26 MP screen at a third of its pixel density and
+// looked blurry; it gets 2 (about 1 MP, a third of a 1440 × 900 desktop at 1.5) and edge smoothing, unless the auto tier steps down to min.
+const dprCap = () => EMB() ? 2 : BOOT.phone && TIER !== 'min' ? 2 : TP.dpr;
 let TIER = null, TP = TIER_P.full, tierMode = BOOT.tierMode, speedTouched = false, tierHold = 0;
 const HISTW = [SL.input, SL.feat, SL.proj, ...BL.map(B => B.out)];
 ray.layers.enable(1);                               // picking still sees the box walls after the min tier moves them to layer 1 (not drawn)
@@ -1967,7 +2022,7 @@ setTier(BOOT.tier);
 // round 9 (compat 8, 9): one resize routine: pixel ratio re-read (capped 1.5), sizes, projection; an active guide shot is reframed for the new viewport
 function onResize() { const { width: VW, height: VH } = viewport();   // the window, or the story's panel while embedded
   requestRender(); camera.aspect = VW / VH; cardOffset(card.classList.contains('show')); camera.updateProjectionMatrix(); renderer.setPixelRatio(Math.min(devicePixelRatio || 1, dprCap())); renderer.setSize(VW, VH); labelR.setSize(VW, VH); 
-  if (GUIDE.on() && GUIDE.reframe) GUIDE.reframe(); else if (atHome && !FLY.on && !WEAR.on) goHome(!(EMB() && camTween)); }   // ticket 06b: embedded, a resize during the pull-out re-aims the flight instead of cutting it
+  if (GUIDE.on() && GUIDE.reframe) GUIDE.reframe(); else if (atHome && !FLY.on && !WEAR.on) goHome(!(EMB() && camTween)); else if (atStep && !EMB() && !FLY.on && !WEAR.on) refitStep(); }   // ticket 06b: embedded, a resize during the pull-out re-aims the flight instead of cutting it
 addEventListener('resize', onResize);
 (function watchDpr() { const mq = matchMedia(`(resolution: ${devicePixelRatio || 1}dppx)`); const f = () => { mq.removeEventListener('change', f); onResize(); watchDpr(); }; mq.addEventListener('change', f); })();
 if (document.fonts && document.fonts.ready) document.fonts.ready.then(() => { requestRender(); if (GUIDE.on() && GUIDE.reframe) GUIDE.reframe(); });   // compat 12: once the fonts are in
@@ -2101,6 +2156,7 @@ function enter() {
   scene.background = new THREE.Color('#000'); renderer.setClearColor(0x000000, 1); scene.fog.color.set('#000'); floor.layers.set(0);
   placeDom();                                        // canvas → #scene, labels → home; tab stop, pointer input and orbiting on again
   document.documentElement.classList.remove('story');
+  if (window.K8Phone) window.K8Phone.apply();        // the phone layout was off on the story page: phone.js picks the form for the viewer now
   window.scrollTo({ left: 0, top: 0, behavior: 'instant' });   // the story's scroll position means nothing to a page that cannot scroll
   tierHold = performance.now() + 2000;               // the frames right after the switch are slow once (resize); the auto tier ignores them
   const p0 = camera.position.clone(), t0 = controls.target.clone();

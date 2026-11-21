@@ -20,9 +20,12 @@
   const vp = () => window.K8Viewport ? window.K8Viewport() : { left: 0, top: 0, width: innerWidth, height: innerHeight };
 
   // ---------------------------------------------------------------- which layout
+  // 21 Nov 2026: the scroll story (html.story, set by index.html's boot script) has none of the viewer's panels, so nothing here applies
+  // to it; viewer.mjs enter() removes the class and calls apply() when the reader opens the 3D model from the story.
+  const story = () => html.classList.contains('story');
   function formNow() {
     if (/[?&]nophone=1/.test(location.search)) return null;   // tools/make_pics.mjs: its 800×500 pictures are small desktop views, not the phone layout
-    if (window.K8_EMBED) return null;
+    if (window.K8_EMBED || story()) return null;
     const { width: w, height: h } = vp();
     if (h <= 500 && w > h) return 'column';             // a phone on its side
     if (w <= 900) return w > h ? 'column' : 'sheet';    // a small window or tablet: by its shape
@@ -32,8 +35,8 @@
     const f = formNow(), was = html.dataset.form || null, br = $('brand');
     if (br) html.style.setProperty('--brand-w', Math.ceil([...br.children].reduce((m, c) => Math.max(m, c.getBoundingClientRect().right), 0)) + 'px');   // where the brand line ends: the Data side's stage strip starts after it when the phone is on its side
     if (f) html.dataset.form = f; else delete html.dataset.form;
-    html.classList.toggle('touch', coarse.matches);
-    if (f !== was) { placeData(); syncTabs(); legendSoon(); }
+    html.classList.toggle('touch', coarse.matches && !story());
+    if (f !== was) { placeData(); placeTools(); syncTabs(); legendSoon(); }
     return f !== was;
   }
   const form = () => window.K8_EMBED ? null : html.dataset.form || null;
@@ -52,7 +55,7 @@
   if (side) side.before(tabs); else document.body.appendChild(tabs);
   // one plain sentence under the user picker, so the tab is not just a lone drop-down
   if ($('userbox')) { const n = document.createElement('p'); n.id = 'sheetUserNote';
-    n.textContent = 'Six recorded players, from calm to very fast head motion. Pick one to replay that recording through the model.';
+    n.textContent = 'Five players: one real recording and four synthetic ones, from calm to very fast head motion. Pick one to run its motion through the model.';
     $('userbox').after(n); }
 
   let sheet = 'card';
@@ -82,6 +85,20 @@
     setSheet(b.dataset.t);
   });
   for (const id of ['inset', 'gazeKey']) if ($(id)) new MutationObserver(syncTabs).observe($(id), { attributes: true, attributeFilter: ['class'] });
+
+  // ---------------------------------------------------------------- words
+  // 21 Nov 2026: the explanations were written for the desktop layout and a mouse. On a phone the panels are tabs of the sheet and there is no
+  // hover, so viewer.mjs (card, inset) and tour.js (tips) pass their text through words(); the desktop text is untouched. touch: only on a touch screen.
+  const WORDS = [
+    [/the top-right panel/g, 'the This step tab'],
+    [/top-right panel/g, 'This step tab'],
+    [/the Key on the right/g, 'the Key in the This step tab'],
+    [/\bhover to go back in time\b/g, 'tap or slide to go back in time'],
+    [/\bhover a step\b/g, 'tap or slide to pick a step'],
+    [/\bClick\b/g, 'Tap'], [/\bclick\b/g, 'tap'],
+    [/scroll to zoom/g, '− / + to zoom', 'touch'],
+  ];
+  const words = s => { if (!s || !form()) return s; for (const [re, to, only] of WORDS) if (!only || html.classList.contains(only)) s = s.replace(re, to); return s; };
 
   // ---------------------------------------------------------------- geometry for the 3D module
   const rect = el => { if (!el || el.hidden) return null; const r = el.getBoundingClientRect(); return r.width && r.height ? r : null; };
@@ -113,7 +130,7 @@
     if (el && card && card.contains(el)) setSheet('card');
     else if (el && side && side.contains(el)) setSheet(el.closest('#userbox') ? 'user' : 'step');
     if (el) {                                             // bring it into view inside its own scrolling panel (never scrolls the page)
-      const sc = el.closest('#card .bd') || el.closest('#side');
+      const sc = el.closest('#card') || el.closest('#side');
       if (sc) { const er = el.getBoundingClientRect(), sr = sc.getBoundingClientRect(); if (er.top < sr.top || er.bottom > sr.bottom) sc.scrollTop += er.top - sr.top - (sr.height - er.height) / 2; }
     }
     box.classList.toggle('ptop', top);
@@ -143,8 +160,34 @@
     if (cur && flow) flow.scrollLeft = cur.parentElement.offsetLeft - flow.offsetLeft - (flow.clientWidth - cur.offsetWidth) / 2;
   }
 
-  // ---------------------------------------------------------------- View options: touch help, and what each icon button does
+  // ---------------------------------------------------------------- upright phone: a one-row bar
+  // 21 Nov 2026: in form "sheet" the bar keeps Back · step · Next · Play · ⋯ (and One call on a block step); the time slider, Tour and
+  // Whole model move to the top of the ⋯ menu, so the bar is one row and the scene gets its height back. Any other form puts them back.
   const menu = $('menu'), keys = $('keysHelp');
+  const MOVED = ['guideBtn', 'all', 'scrub', 'readout'].map($).filter(Boolean), HOME = new Map(MOVED.map(el => [el, [el.parentElement, el.nextSibling]]));
+  let tools = null;
+  function placeTools() {
+    if (!menu || !MOVED.length) return;
+    if (html.dataset.form === 'sheet') {
+      if (!tools) {
+        tools = document.createElement('div'); tools.id = 'phoneTools';
+        tools.innerHTML = '<div class="pt-row"></div><label class="pt-time"><span>Time</span></label>';
+        // one sample back / on: a finger cannot hit a single sample on a 400-sample slider (the keyboard's ← →)
+        const step = d => { const s = $('scrub'); if (!s) return; if (window.K8Viewer && K8Viewer.setPlaying) K8Viewer.setPlaying(false);
+          s.value = String(Math.max(+s.min, Math.min(+s.max, +s.value + d))); s.dispatchEvent(new Event('input', { bubbles: true })); };
+        for (const [d, l, p] of [[-1, 'One sample back', 'm15 18-6-6 6-6'], [1, 'One sample on', 'm9 18 6-6-6-6']]) {
+          const b = document.createElement('button'); b.type = 'button'; b.className = 'b-icon pt-step'; b.setAttribute('aria-label', l);
+          b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${p}"/></svg>`; b.onclick = () => step(d); tools.querySelector('.pt-time').append(b); }
+        menu.querySelector('.mh').after(tools);
+        // the tour or the whole model takes the screen: the menu steps aside (capture: the buttons rewrite their own insides when pressed)
+        tools.addEventListener('click', e => { if (e.target.closest('#guideBtn, #all') && menu.classList.contains('show')) $('more').click(); }, true);
+      }
+      const row = tools.querySelector('.pt-row'), time = tools.querySelector('.pt-time');
+      for (const el of MOVED) if (el.tagName === 'BUTTON') row.appendChild(el); else time.insertBefore(el, el.id === 'scrub' ? time.querySelector('.pt-step') : null);
+    } else for (const el of MOVED) { const [par, next] = HOME.get(el); if (el.parentElement !== par) par.insertBefore(el, next && next.parentElement === par ? next : null); }
+  }
+
+  // ---------------------------------------------------------------- View options: touch help, and what each icon button does
   if (menu && keys) {
     const d = document.createElement('details'); d.className = 'hint'; d.id = 'touchHelp'; d.open = true;
     d.innerHTML = '<summary>Touch</summary><dl>' +
@@ -185,6 +228,7 @@
   }
   let legendT = 0; const legendSoon = () => { clearTimeout(legendT); legendT = setTimeout(legend, 0); };
   if (card) new MutationObserver(legendSoon).observe(card, { childList: true });
+  if (card) new MutationObserver(() => { if (form()) card.scrollTop = 0; }).observe(card, { childList: true });   // phone.css: the whole card scrolls, level switch included; a new card starts at its top
   if (all) new MutationObserver(legendSoon).observe(all, { attributes: true, attributeFilter: ['aria-pressed'] });
   addEventListener('load', legendSoon);
 
@@ -195,5 +239,5 @@
   // A bar that grows or shrinks (the caption line, the wrapped rows) moves the sheet: re-centre the scene.
   if (bar && window.ResizeObserver) { let h = 0; new ResizeObserver(() => { const n = bar.offsetHeight; if (n !== h) { h = n; if (form()) relayout(); } }).observe(bar); }
 
-  window.K8Phone = { form, free, offset, distK, tip, dataStage, setSheet, setMin, sheet: () => sheet, isPhone: !!BOOT.phone };
+  window.K8Phone = { apply, words, form, free, offset, distK, tip, dataStage, setSheet, setMin, sheet: () => sheet, isPhone: !!BOOT.phone };
 })();

@@ -115,7 +115,8 @@
     }
     function hudUI() {
       const s = SHOTS[n];
-      prog.textContent = s.end ? `summary · whole model` : `tip ${n + 1} / ${N} · ${api.stepName(s.k)}${paused ? ' · paused' : ''}`;
+      const ph = window.K8Phone && window.K8Phone.form();   // a phone's short line: the numbers first, the rest may be cut (phone.css)
+      prog.textContent = s.end ? `summary · whole model` : `${ph ? '' : 'tip '}${n + 1}${ph ? '/' : ' / '}${N} · ${api.stepName(s.k)}${paused ? ' · paused' : ''}`;
       bar.style.width = `${(Math.min(n + 1, N) / N) * 100}%`;
       autoB.setAttribute('aria-pressed', auto); autoB.textContent = 'Auto-play';   // round 8: fixed label; the state is aria-pressed + "paused" in the progress text
       resB.hidden = !paused; speedB.value = String(speed); speedV.textContent = `${speed.toFixed(speed < 1 ? 2 : 1)}×`;
