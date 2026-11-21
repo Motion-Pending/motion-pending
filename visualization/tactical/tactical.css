@@ -125,3 +125,13 @@ html:not(.story) .hud { border-radius:2px; }
 html:not(.story) ::selection { background:rgba(223,241,64,.28); color:#f1f0ea; }
 /* the primary button (Next / Back to the story): bone, acid on hover, black text both ways (the viewer's own hover text is white) */
 html:not(.story) #next:hover:not(:disabled), html:not(.story) #storyBack:hover:not(:disabled) { color:var(--go-ink); border-color:var(--go-hi); }
+/* 21 Nov 2026: the team cards' LinkedIn links (a text link, so its name is its words; the arrow marks a new tab) and the
+   paper's "Coming soon" line. */
+.tm-card .tm-link { align-self:flex-start; margin-top:14px; padding:4px 0; color:var(--quiet); font:400 11.5px/1.6 var(--mono);
+  letter-spacing:.1em; text-transform:uppercase; text-decoration:none; border-bottom:1px solid var(--line); }
+.tm-card h3 + .tm-link { margin-top:auto; padding-top:18px; }
+.tm-card .tm-link:hover { color:var(--ink); border-bottom-color:var(--ink); }
+.tm-card .tm-link:focus-visible { outline:1px solid var(--ink); outline-offset:3px; }
+.st-paper .pp-soon { color:var(--ink); font-size:1.5em; font-weight:500; letter-spacing:-.01em; }
+/* a member card without a link keeps an empty space of the link's height, so every role line sits at the same height */
+.tm-card:has(.tm-role):not(:has(.tm-link))::after { content:""; display:block; height:calc(14px + 8px + 11.5px * 1.6 + 1px); }
