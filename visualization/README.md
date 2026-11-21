@@ -5,7 +5,7 @@ The team's interactive site for the final model (final_k8_combined_v10_s42, trai
 
 ## Run it
 
-**Live:** <https://motion-pending.github.io/>, published from this folder by `.github/workflows/pages.yml` on
+**Live:** <https://motion-pending.github.io/motion-pending/>, published from this folder by `.github/workflows/pages.yml` on
 every push to `main` that changes it (or by hand from the Actions tab).
 
 To run it locally, it must be served over http (the pages load modules and data files), from this folder:
