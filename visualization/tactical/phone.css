@@ -247,3 +247,8 @@ html.touch #wearHud p:has(#wearExit) { display:flex; flex-wrap:wrap; gap:6px; al
 html.touch #wearTouch { display:inline-flex; gap:6px; margin-right:auto; }
 html.touch #wearTouch button { width:44px; min-height:44px; padding:0; justify-content:center; }
 html.touch #wearExit { min-height:44px; }
+
+/* small touch fixes: a 44 px way back to the story (side.js #toStory), no double-tap zoom on fast repeated taps, the one-sample steps */
+html[data-form] #toStory { min-height:44px; padding:0 10px; margin-left:-10px; margin-right:4px; }
+html[data-form] { touch-action:manipulation; }
+html[data-form="sheet"] #phoneTools .pt-step { flex:none; width:44px; min-height:44px; padding:0; justify-content:center; }

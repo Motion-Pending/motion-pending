@@ -172,11 +172,18 @@
       if (!tools) {
         tools = document.createElement('div'); tools.id = 'phoneTools';
         tools.innerHTML = '<div class="pt-row"></div><label class="pt-time"><span>Time</span></label>';
+        // one sample back / on: a finger cannot hit a single sample on a 400-sample slider (the keyboard's ← →)
+        const step = d => { const s = $('scrub'); if (!s) return; if (window.K8Viewer && K8Viewer.setPlaying) K8Viewer.setPlaying(false);
+          s.value = String(Math.max(+s.min, Math.min(+s.max, +s.value + d))); s.dispatchEvent(new Event('input', { bubbles: true })); };
+        for (const [d, l, p] of [[-1, 'One sample back', 'm15 18-6-6 6-6'], [1, 'One sample on', 'm9 18 6-6-6-6']]) {
+          const b = document.createElement('button'); b.type = 'button'; b.className = 'b-icon pt-step'; b.setAttribute('aria-label', l);
+          b.innerHTML = `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="${p}"/></svg>`; b.onclick = () => step(d); tools.querySelector('.pt-time').append(b); }
         menu.querySelector('.mh').after(tools);
-        tools.addEventListener('click', e => { if (e.target.closest('#guideBtn, #all') && menu.classList.contains('show')) $('more').click(); });   // the tour or the whole model takes the screen: the menu steps aside
+        // the tour or the whole model takes the screen: the menu steps aside (capture: the buttons rewrite their own insides when pressed)
+        tools.addEventListener('click', e => { if (e.target.closest('#guideBtn, #all') && menu.classList.contains('show')) $('more').click(); }, true);
       }
       const row = tools.querySelector('.pt-row'), time = tools.querySelector('.pt-time');
-      for (const el of MOVED) (el.tagName === 'BUTTON' ? row : time).appendChild(el);
+      for (const el of MOVED) if (el.tagName === 'BUTTON') row.appendChild(el); else time.insertBefore(el, el.id === 'scrub' ? time.querySelector('.pt-step') : null);
     } else for (const el of MOVED) { const [par, next] = HOME.get(el); if (el.parentElement !== par) par.insertBefore(el, next && next.parentElement === par ? next : null); }
   }
 
