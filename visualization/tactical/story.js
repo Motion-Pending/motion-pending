@@ -374,6 +374,17 @@
     if (sp && window.MutationObserver) new MutationObserver(checkModel).observe(sp, { attributes: true, attributeFilter: ['data-live'] });
   }
 
+  // ---------------------------------------------------------------- the chapter menu of a narrow bar (21 Nov 2026; story.css: under
+  // 760 px the chapter links fold into it). A link, Escape, or a tap outside the bar closes it.
+  (function () {
+    var bar = document.querySelector('.st-top'), b = bar && bar.querySelector('.st-menu'); if (!b) return;
+    function set(open) { bar.classList.toggle('is-chap', open); b.setAttribute('aria-expanded', open ? 'true' : 'false'); }
+    b.addEventListener('click', function () { set(!bar.classList.contains('is-chap')); });
+    bar.querySelector('.st-chap').addEventListener('click', function (e) { if (e.target.closest('a')) set(false); });
+    document.addEventListener('click', function (e) { if (!bar.contains(e.target)) set(false); });
+    document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && bar.classList.contains('is-chap')) { set(false); b.focus(); } });
+  })();
+
   // ---------------------------------------------------------------- the page
   // Read, then write: reading layout (getBoundingClientRect) after a style was written makes the browser lay the page out again at once,
   // so every deck's geometry is read first and only then does any deck write (its cards, and its live stage through setPos).

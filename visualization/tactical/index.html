@@ -272,10 +272,10 @@
   .lbl.zero { color:#000; background:#4fd18b; border-color:#4fd18b; font-weight:600; }
 </style>
 <!-- viz-phone: the phone, small-tablet and touch layout. Every rule in it hangs off html[data-form] or html.touch (set by phone.js), so a desktop window is untouched. -->
-<link rel="stylesheet" href="phone.css?r=t1">
-<link rel="stylesheet" href="story.css?r=f2">
+<link rel="stylesheet" href="phone.css?r=ph1">
+<link rel="stylesheet" href="story.css?r=ph1">
 <link rel="stylesheet" href="hero.css?r=h2">
-<link rel="stylesheet" href="tactical.css?r=sub1">   <!-- 16 Nov 2026: the Anduril-style theme over story.css, and the TAKE CONTROL section -->
+<link rel="stylesheet" href="tactical.css?r=ph3">   <!-- 16 Nov 2026: the Anduril-style theme over story.css, and the TAKE CONTROL section -->
 <script>
 // P1 (viz-perf): the boot decision, written in old-style JavaScript (ES5) on purpose, so browsers too old for the 3D view still run it.
 // It chooses between the live 3D view and the picture version ("lite": lite.js, one picture per step, no WebGL), and the starting quality tier.
@@ -339,17 +339,23 @@ if (window.K8_BOOT.lite || window.K8_STORY) {
 { "imports": { "three": "../vendor/three/build/three.module.js",
                "three/addons/": "../vendor/three/examples/jsm/" } }
 </script>
-<script src="../adapter.js"></script>
-<script src="assets/head.js?r=p2"></script>
-<!-- the neck rig as a classic script, as in ../proposal: the Data side (dataview.js) builds its head poser from window.K8HeadPose when it loads, which can be before the viewer module has run -->
-<script src="headpose.js?r=t2"></script>
-<script src="traces/index.js?r=q2"></script>
-<script src="plain.js?r=f1"></script>
-<script src="beginner.js?r=f1"></script>
-<script src="expert.js?r=f1"></script>
-<script src="insets.js?r=t1"></script>
-<script src="tour.js?r=t1"></script>
-<script src="guide.js?r=f1"></script>
+<!-- The viewer's classic scripts (about 330 KB). The story uses none of them, so they are written in only when the page opens as the
+     viewer (21 Nov 2026). document.write keeps them parser-blocking and in this order, exactly as plain tags were, and the story never
+     fetches them. headpose.js is the neck rig as a classic script, as in ../proposal: the Data side (dataview.js) builds its head poser
+     from window.K8HeadPose when it loads, which can be before the viewer module has run. -->
+<script>
+if (!window.K8_STORY) document.write(
+  '<script src="../adapter.js"><\/script>' +
+  '<script src="assets/head.js?r=p2"><\/script>' +
+  '<script src="headpose.js?r=t2"><\/script>' +
+  '<script src="traces/index.js?r=q2"><\/script>' +
+  '<script src="plain.js?r=f1"><\/script>' +
+  '<script src="beginner.js?r=f1"><\/script>' +
+  '<script src="expert.js?r=f1"><\/script>' +
+  '<script src="insets.js?r=t1"><\/script>' +
+  '<script src="tour.js?r=ph1"><\/script>' +
+  '<script src="guide.js?r=ph1"><\/script>');
+</script>
 </head>
 <body>
 <!-- ================================================================ the story (styled by story.css, driven by story.js; shown when html.story is set by the boot script)
@@ -358,8 +364,9 @@ if (window.K8_BOOT.lite || window.K8_STORY) {
   <header class="st-top">
     <a class="st-name" href="#s-hook"><b>Motion Pending</b><span class="st-sub"> · Head-pose forecasting · 9th ABC Challenge</span></a>
     <nav aria-label="Chapters">
-      <a href="#s-challenge">Prediction</a><a href="#s-data">Data</a><a href="#s-model">Model</a><a href="#s-results">Results</a><a href="#s-paper">Paper</a>
-      <a class="st-gh" href="https://github.com/Motion-Pending/motion-pending.github.io" target="_blank" rel="noopener" aria-label="The team repo on GitHub (opens in a new tab)" title="Motion-Pending/motion-pending.github.io on GitHub"><svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
+      <button class="st-menu" type="button" aria-expanded="false" aria-controls="stChap" aria-label="Chapters"><svg viewBox="0 0 24 24" width="20" height="20" aria-hidden="true" focusable="false"><path d="M4 7h16M4 12h16M4 17h16" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg></button>
+      <span class="st-chap" id="stChap"><a href="#s-challenge">Prediction</a><a href="#s-data">Data</a><a href="#s-model">Model</a><a href="#s-results">Results</a><a href="#s-paper">Paper</a></span>
+      <a class="st-gh" href="https://github.com/Motion-Pending/motion-pending" target="_blank" rel="noopener" aria-label="The team repo on GitHub (opens in a new tab)" title="Motion-Pending/motion-pending on GitHub"><svg viewBox="0 0 16 16" width="18" height="18" aria-hidden="true" focusable="false"><path fill="currentColor" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg></a>
       <a class="st-cta" href="#s-model">Take control</a>
     </nav>
   </header>
@@ -777,7 +784,7 @@ if (window.K8_BOOT.lite || window.K8_STORY) {
       <dt>Replay data</dt><dd>The hero clip and the model's main replay use head motion from <a href="https://researchdata.cab.unipd.it/1239/">QuestSet</a> (Baldoni et al., 2024), licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Modified: head rotation only, converted to the model's frame and resampled to 100&nbsp;Hz. The model was not trained on it.</dd>
       <!-- Team: the paper's author block (main.tex \author, \thanks), names only; "supervisors" from UPDATE_BRIEF.md decision 1 -->
       <dt>Team</dt><dd>Motion Pending: Jacob Dorrill, Nicholas Groenewald, Ray Crowley and Duncan O'Regan. Supervisors: Ruairi O'Reilly and JingHua Ye. Computer Science Department, Munster Technological University, Cork, Republic of Ireland. Jacob and Nicholas worked on the model side (model architecture, compression and latency); Ray and Duncan on the data side (data preparation and the pipeline).</dd>
-      <dt>Code</dt><dd>The model, the benchmark and this site are on GitHub at <a href="https://github.com/Motion-Pending/motion-pending.github.io">Motion-Pending/motion-pending.github.io</a>. Personal copies: <a href="https://github.com/JacobDrizzle/abc-challenge">Jacob Dorrill</a> and <a href="https://github.com/NicGroenewald/abc-challenge">Nicholas Groenewald</a>.</dd>
+      <dt>Code</dt><dd>The model, the benchmark and this site are on GitHub at <a href="https://github.com/Motion-Pending/motion-pending">Motion-Pending/motion-pending</a>. Personal copies: <a href="https://github.com/JacobDrizzle/abc-challenge">Jacob Dorrill</a> and <a href="https://github.com/NicGroenewald/abc-challenge">Nicholas Groenewald</a>.</dd>
       <!-- 16 Nov 2026: CC BY 4.0 needs title, author, source, licence and a note of changes (models/CREDITS.md) -->
       <dt>Headset model</dt><dd>"<a href="https://sketchfab.com/3d-models/meta-quest-3-65a813833dc04eeeb7d33bdca58c184c">Meta Quest 3</a>" by <a href="https://sketchfab.com/ElinHohler">Elin</a>, licensed under <a href="https://creativecommons.org/licenses/by/4.0/">CC BY 4.0</a>. Modified: logo removed, fitted to the head. Meta Quest is a trademark of Meta; this page is not affiliated with Meta.</dd>
       <dt>Head model</dt><dd>Head mesh from Blender Studio's <a href="https://www.blender.org/download/demo-files/">Human Base Meshes</a> bundle v1.4.1 (CC0), adapted by us.</dd>
@@ -786,8 +793,8 @@ if (window.K8_BOOT.lite || window.K8_STORY) {
     </dl>
   </section>
 </main>
-<script src="story.js?r=q1"></script>
-<script src="tc.js?r=t3"></script>   <!-- TAKE CONTROL: loads and launches journey/journey.html -->
+<script src="story.js?r=ph1"></script>
+<script src="tc.js?r=ph1"></script>   <!-- TAKE CONTROL: loads and launches journey/journey.html -->
 <div id="scene" role="img" aria-label="3D view of the k8_combined head-pose model"></div>
 <!-- viz-perf P1: shown from the first paint until the first trace is on screen (or the picture version starts), so the page is never blank -->
 <div id="k8load" role="status" style="position:fixed;left:50%;top:45%;transform:translate(-50%,-50%);z-index:3;color:#8f9cb0;font:15px/1.5 system-ui,sans-serif;text-align:center;pointer-events:none">Loading the model…<br><span style="font-size:13px">about 6 MB; a slow computer needs a few seconds</span></div>
@@ -873,8 +880,8 @@ if (window.K8_BOOT.lite || window.K8_STORY) {
 <!-- viz-data: Data | Model switch. side.js adds the two tabs to #brand and the #dataView container, sets body[data-side] and fires "k8:side"; the Data side itself loads on first use. -->
 <script src="side.js?r=off1"></script>
 <!-- viz-phone: sets html[data-form] and html.touch, builds the sheet's tab strip, and gives the 3D module window.K8Phone (free rectangle, view offset) -->
-<script src="phone.js?r=p1"></script>
+<script src="phone.js?r=ph1"></script>
 
-<script type="module" src="viewer.mjs?r=q1"></script>
+<script type="module" src="viewer.mjs?r=ph1"></script>
 </body>
 </html>

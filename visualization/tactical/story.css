@@ -68,7 +68,19 @@ html.story, html.story body { background:#000; }
 .st-top nav a:hover { color:var(--ink); }
 .st-top nav a.st-cta { color:var(--go-ink); background:var(--go); border:1px solid #24523a; border-radius:6px; padding:8px 14px; transition:background .15s; }
 .st-top nav a.st-cta:hover { background:var(--go-hi); color:#fff; }
-@media (max-width: 760px) { .st-top nav a:not(.st-cta) { display:none; } }
+/* the chapter links sit in .st-chap, which is display:contents here, so on a wide bar they are plain items of the nav. Under 760 px
+   they do not fit (21 Nov 2026): they fold into a menu under the .st-menu button (story.js), one 48 px row per chapter. */
+.st-chap { display:contents; }
+.st-menu { display:none; }
+@media (max-width: 760px) {
+  .st-top .st-menu { display:inline-flex; align-items:center; justify-content:center; width:44px; height:44px; min-height:0; padding:0; margin-right:-4px;
+    color:var(--quiet); background:none; border:0; border-radius:6px; cursor:pointer; }
+  .st-top .st-menu[aria-expanded="true"] { color:var(--ink); background:rgba(255,255,255,.07); }
+  .st-chap { display:none; position:absolute; top:100%; right:clamp(20px, 4vw, 48px); min-width:200px; flex-direction:column; padding:6px 0;
+    background:var(--bg); border:1px solid var(--line); border-top:0; border-radius:0 0 8px 8px; }
+  .st-top.is-chap .st-chap { display:flex; }
+  .st-top nav .st-chap a { display:flex; align-items:center; min-height:48px; padding:0 20px; font-size:15px; color:var(--body); }
+}
 
 /* ---------------------------------------------------------------- 4. sections and type */
 .st-sec { max-width:var(--col); margin:0 auto; padding:var(--gap) clamp(20px, 4vw, 48px); }
@@ -117,6 +129,8 @@ html.story, html.story body { background:#000; }
 .pl-rows { position:absolute; left:-30px; top:0; bottom:0; display:grid; grid-template-rows:repeat(4, 1fr); align-items:center; font:500 13px/1 var(--mono); color:var(--quiet); }
 .pl-in  { clip-path:inset(0 calc(100% - var(--u, 1) * 95.36%) 0 0); }
 .pl-out { clip-path:inset(0 calc((1 - var(--u, 1)) * 4.64%) 0 95.36%); }
+/* without motion no input panel stands behind the answer, so the answer's cut was 95% empty: show the input with it (21 Nov 2026) */
+html:not(.st-motion) .pl-out { clip-path:none; }
 .pl-score { position:absolute; top:-8px; bottom:-8px; right:-1px; width:2px; background:var(--amber); border-radius:2px; box-shadow:0 0 14px 2px rgba(240,178,74,.55); opacity:clamp(0, calc((var(--u, 1) - .85) * 8), 1); }
 .pn-answer { border-color:rgba(132,178,255,.5); }
 html.st-motion .pn-answer { background:rgba(132,178,255,.04); }   /* clear glass: the input on the panel behind shows through it */
@@ -143,6 +157,7 @@ html.st-motion .pn-answer .pn-body { inset:52px 26px 26px 52px; }
 .pn-res .pn-body { position:relative; inset:auto; display:flex; flex-direction:column; justify-content:center; gap:22px; padding:60px 30px 30px; }
 .pn-res .st-band { margin:0; grid-template-columns:repeat(2, minmax(0, 1fr)); }
 .pn-res .st-band .is-ours dd { color:var(--blue); }
+@media (max-width: 480px) { .pn-res .pn-body { padding:52px 18px 22px; } .pn-res .st-band { grid-template-columns:1fr; } }   /* two 94 px columns overflowed */
 .pn-cap { margin:0; font-size:14.5px; line-height:1.5; color:var(--quiet); }
 /* two groups of bars in one results panel (the accuracy step: full test, then the 20-player benchmark): a small label over each group */
 .pn-grp { display:grid; gap:12px; }
@@ -333,3 +348,20 @@ html.st-motion .dk-rail li.is-on { color:var(--ink); border-top-color:var(--ink)
 /* the maths beside the stage (SPEC H5): formula lines in the mono face, the curve graph under them */
 .dk-math { margin-top:20px; font:400 clamp(11.5px, .86vw, 14px)/1.7 var(--mono); color:#b4b4b4; white-space:pre-wrap; }   /* 9.6:1 on black */
 .dk-inset { margin-top:16px; max-width:420px; }
+
+/* ---------------------------------------------------------------- 9. phones (21 Nov 2026)
+ * A phone held upright (<= 768 px wide, taller than wide; tactical.css and tc.js use the same test): labels no smaller than 12 px,
+ * the hero's tag kept on the empty left of the poster instead of across the headset. Any touch screen: the small links get a
+ * 44 px tall hit area (an invisible ::before), so they look the same and are easy to tap. */
+@media (max-width: 768px) and (orientation: portrait) {
+  #story :is(.pn-tag, .st-kicker, .st-cue, .tm-kind, .tm-link, .st-band dd small) { font-size:12px; }
+  #s-hook .pn-tag { max-width:50%; line-height:1.35; }
+  .pn-split .pn-body { inset:56px 18px 26px; }
+  #story .st-split span { padding:0 3px; font-size:12px; }
+}
+@media (pointer: coarse) {
+  .tm-card .tm-link, #story .st-cue { position:relative; }
+  .tm-card .tm-link::before, #story .st-cue::before { content:""; position:absolute; left:-6px; right:-6px; top:50%; height:44px; margin-top:-22px; }
+  .st-top nav a.st-cta { padding-top:11px; padding-bottom:11px; }
+  .st-top .st-name { padding:11px 0; }
+}

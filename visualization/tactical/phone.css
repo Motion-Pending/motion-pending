@@ -74,7 +74,9 @@ html[data-form] #card .min, html[data-form] #card .x, html[data-form] #card .hd 
 html[data-form] #card.min .bd { display:block; } html[data-form] #card.min .lvl { display:inline-flex; }
 html[data-form] #card .hd { padding:6px 10px; flex:none; cursor:default; min-height:0; border-bottom:1px solid var(--line); }
 html[data-form] #card .lvl { flex:none; } html[data-form] #card .lvl button { min-height:44px; height:44px; padding:0 14px; font-size:13px; }
-html[data-form] #card .bd { flex:1 1 auto; min-height:0; padding:10px 14px 14px; }
+/* 21 Nov 2026: the whole card scrolls, the level switch with the words, so a short sheet gives its height to the text (phone.js scrolls a new card to the top) */
+html[data-form] body:not(.lite) #card { overflow-y:auto; overscroll-behavior:contain; }
+html[data-form] #card .bd { flex:none; min-height:0; overflow:visible; padding:10px 14px 14px; }
 html[data-form] #card p { max-width:none; }
 html[data-form] #card.cmp, html[data-form] #card.cmpd { left:var(--sh-l); width:var(--sh-w); transform:none; }
 /* side panel: no headers of its own; "This step" shows the key and the figure, "Test user" shows the picker */
@@ -109,6 +111,11 @@ html[data-form] body:not(.lite) #menu { left:calc(8px + var(--safe-l)); right:ca
 html[data-form] #keysHelp { display:none; }
 html[data-form] #guideHud { top:calc(50px + var(--safe-t)); left:auto; right:calc(8px + var(--safe-r)); transform:none; gap:6px; padding:4px 6px 6px 10px; max-width:calc(100vw - 16px); }
 html[data-form] #guideHud .gt, html[data-form] #guideHud .gsl { display:none; }
+/* 21 Nov 2026: the progress line gives way (ellipsis), the buttons never do, so Exit stays on screen when "· paused" and Resume appear */
+html[data-form] #guideHud .gp { flex:1 1 auto; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+html[data-form] #guideHud button { flex:none; padding:0 10px; }
+html[data-form="sheet"] #guideHud { top:calc(4px + var(--safe-t)); left:calc(86px + var(--safe-l)); right:calc(8px + var(--safe-r)); max-width:none; }
+html[data-form="sheet"] body:has(#guideHud:not([hidden])) #brand > :not(#toStory) { visibility:hidden; }   /* upright: the tour line takes the brand row, next to ← Story */
 /* A tip is docked, not floating: over the sheet when it points into the scene (so the scene stays whole), or along the top of the
    scene when it points at something inside the sheet or the bar. tour.js reads the box's real place for its pointer line. */
 html[data-form] #tour { left:var(--sh-l) !important; top:auto !important; bottom:var(--sh-b); width:var(--sh-w); max-width:none !important; height:calc(var(--sh-h) + 46px); max-height:none;
@@ -128,20 +135,24 @@ html[data-form] #tip { display:none !important; }                               
 html[data-form] #k8load { top:26%; width:80%; }
 
 /* ---------- form "sheet": upright ---------- */
-html[data-form="sheet"] { --sh-l:calc(8px + var(--safe-l)); --sh-w:calc(100vw - 16px - var(--safe-l) - var(--safe-r)); --sh-b:calc(var(--bar-h) + 14px + var(--safe-b)); --sh-h:clamp(150px, 31dvh, 330px); }
-html[data-form="sheet"] #sheetTabs { bottom:calc(var(--sh-b) + var(--sh-h)); }
+html[data-form="sheet"] { --sh-l:calc(8px + var(--safe-l)); --sh-w:calc(100vw - 16px - var(--safe-l) - var(--safe-r)); --sh-b:calc(var(--bar-h) + 14px + var(--safe-b)); --sh-h:clamp(150px, 28dvh, 300px); }
+html[data-form="sheet"] #sheetTabs { bottom:calc(var(--sh-b) + var(--sh-h)); height:44px; }
 html[data-form="sheet"][data-sheetmin] #sheetTabs { bottom:var(--sh-b); }
-@media (max-width: 600px) {
-  html[data-form="sheet"] #bar .row { flex-wrap:wrap; row-gap:6px; }
-  html[data-form="sheet"] #bar .g-nav { flex:1 0 100%; }
-  html[data-form="sheet"] #bar .g-play { flex:1 1 0; min-width:0; order:0; border-left:0 !important; padding-left:0 !important; }
-  html[data-form="sheet"] #bar .g-tools { flex:0 0 auto; order:0; }
-}
-@media (min-width: 601px) {
-  html[data-form="sheet"] #bar .row { flex-wrap:nowrap; }
-  html[data-form="sheet"] #bar .g-play { flex:1 1 0; min-width:0; flex-basis:0; order:0; border-left:1px solid var(--divider) !important; padding-left:8px !important; }
-  html[data-form="sheet"] .stepbox { flex:0 1 190px; }
-}
+/* 21 Nov 2026: one row, Back · step · Next · (One call) · Play · ⋯; the time slider, Tour and Whole model are at the top of ⋯ (phone.js) */
+html[data-form="sheet"] #bar .row { flex-wrap:nowrap; gap:6px; }
+html[data-form="sheet"] #bar .g-nav { flex:1 1 auto; min-width:0; }
+html[data-form="sheet"] #bar .g-play, html[data-form="sheet"] #bar .g-tools { flex:0 0 auto; min-width:0; order:0; border-left:0 !important; padding-left:0 !important; }
+html[data-form="sheet"] #next { width:52px; padding:0; justify-content:center; } html[data-form="sheet"] #next .bl { display:none; }
+html[data-form="sheet"] .stepbox { flex:1 1 auto; min-width:0; }
+html[data-form="sheet"] .stepbox > span { overflow:hidden; white-space:nowrap; text-overflow:ellipsis; }
+#phoneTools { display:none; }
+html[data-form="sheet"] #phoneTools { display:flex; flex-direction:column; gap:6px; padding:4px var(--s4, 16px) 8px; border-bottom:1px solid var(--line); }
+html[data-form="sheet"] #phoneTools .pt-row { display:flex; gap:8px; }
+html[data-form="sheet"] #phoneTools .pt-row button { flex:1 1 0; min-height:44px; justify-content:center; gap:8px; }
+html[data-form="sheet"] #phoneTools .pt-row .bl { display:inline; }
+html[data-form="sheet"] #menu #phoneTools .pt-time { padding:0; gap:0 10px; min-height:44px; flex-wrap:wrap; }
+html[data-form="sheet"] #menu #phoneTools #scrub { flex:1 1 auto; width:auto; min-width:0; height:44px; margin:0; }
+html[data-form="sheet"] #phoneTools #readout { display:block; flex:1 0 100%; font-size:12px; color:var(--muted); white-space:normal; overflow:visible; }
 
 /* ---------- form "column": on its side ---------- */
 html[data-form="column"] { --sh-l:calc(8px + var(--safe-l)); --sh-w:clamp(270px, 40vw, 360px); --sh-b:calc(var(--bar-h) + 14px + var(--safe-b)); --sh-h:calc(100dvh - var(--sh-b) - 98px - var(--safe-t)); }
@@ -229,3 +240,15 @@ html[data-form="column"] #dvFlow button { display:flex; flex-direction:row; flex
   html[data-form="sheet"] #dvBandKey { display:none; }
   html[data-form="sheet"] #dvStage { gap:4px; padding:5px 8px 6px; }
 }
+
+/* the wear view on touch: zoom and play buttons in its HUD (viewer.mjs wearTouchUI), beside Take it off */
+#wearTouch[hidden] { display:none; }
+html.touch #wearHud p:has(#wearExit) { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+html.touch #wearTouch { display:inline-flex; gap:6px; margin-right:auto; }
+html.touch #wearTouch button { width:44px; min-height:44px; padding:0; justify-content:center; }
+html.touch #wearExit { min-height:44px; }
+
+/* small touch fixes: a 44 px way back to the story (side.js #toStory), no double-tap zoom on fast repeated taps, the one-sample steps */
+html[data-form] #toStory { min-height:44px; padding:0 10px; margin-left:-10px; margin-right:4px; }
+html[data-form] { touch-action:manipulation; }
+html[data-form="sheet"] #phoneTools .pt-step { flex:none; width:44px; min-height:44px; padding:0; justify-content:center; }
